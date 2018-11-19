@@ -28,6 +28,14 @@ const int AP_STARTED_BIT = BIT2;
 static const char *TAG = "Wifi";
 static EventGroupHandle_t wifi_event_group;
 
+
+/**
+ * TODO: make function discription
+ *
+ * @param  system_event_t *
+ * @param  void *
+ * @return esp_err_t
+ */
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch(event->event_id) {
@@ -54,6 +62,11 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
+/**
+ * TODO: make function discription
+ *
+ * @return void
+ */
 void nvs_init()
 {
     esp_err_t ret = nvs_flash_init();
@@ -66,6 +79,11 @@ void nvs_init()
     ESP_LOGI("NVS init", "NVS setup finished...");
 }
 
+/**
+ * TODO: make function discription
+ *
+ * @return void
+ */
 static void start_dhcp_server()
 {
     tcpip_adapter_init();
@@ -83,6 +101,11 @@ static void start_dhcp_server()
     ESP_LOGI(TAG, "DHCP server started");
 }
 
+/**
+ * TODO: make function discription
+ *
+ * @return void
+ */
 void wifi_init()
 {
     //esp_log_level_set("wifi", ESP_LOG_NONE);
@@ -114,6 +137,12 @@ void wifi_init()
             wifi_config.ap.ssid, wifi_config.ap.password);
 }
 
+/**
+ * TODO: make function discription
+ *
+ * @param  void *
+ * @return void
+ */
 void tcp_server(void *pvParam)
 {
     ESP_LOGI(TAG, "tcp_server task started");
@@ -190,6 +219,11 @@ void tcp_server(void *pvParam)
     ESP_LOGI(TAG, "tcp_client task closed");
 }
 
+/**
+ * TODO: make function discription
+ *
+ * @return void
+ */
 void printStationList()
 {
     printf("\nConnected stations:\n");
@@ -215,6 +249,12 @@ void printStationList()
     printf("\n");
 }
 
+/**
+ * TODO: make function discription
+ *
+ * @param  void *
+ * @return void
+ */
 void print_sta_info(void *pvParam)
 {
     ESP_LOGI(TAG, "print_sta_info task started \n");
@@ -232,7 +272,11 @@ void print_sta_info(void *pvParam)
 }
 
 
-/* Main function */
+/**
+ * TODO: make function discription
+ *
+ * @return void
+ */
 void app_main()
 {
     nvs_init();
