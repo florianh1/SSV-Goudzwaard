@@ -231,6 +231,8 @@ void print_sta_info(void *pvParam)
     }
 }
 
+
+/* Main function */
 void app_main()
 {
     nvs_init();
