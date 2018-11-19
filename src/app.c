@@ -14,8 +14,8 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
-#define ESP_WIFI_SSID       "ESP_sock_test"
-#define ESP_WIFI_PASS       "123456789"          /* Minimal 8, maximal 64 characters */
+#define ESP_WIFI_SSID       "SSV GOLDENSWORD"
+#define ESP_WIFI_PASS       "Manderijn"          /* Minimal 8, maximal 64 characters */
 #define AP_MAX_CONNECTIONS  4
 #define PORT                3000
 #define LISTEN_Q            2
