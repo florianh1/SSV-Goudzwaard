@@ -14,12 +14,30 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
-#define ESP_WIFI_SSID       "SSV GOLDENSWORD"
-#define ESP_WIFI_PASS       "Manderijn"          /* Minimal 8, maximal 64 characters */
+/* Wi-Fi SSID, note a maximum character length of 32 */
+#define ESP_WIFI_SSID       "SSV_GoudZwaard"
+
+/* Wi-Fi password, note a minimal length of 8 and a maximum length of 64 characters */
+#define ESP_WIFI_PASS       "12345678"
+
+/* Wi-Fi channel, note a range from 0 to 13 */
+#define ESP_WIFI_CHANNEL    0
+
+/* Amount of Access Point connections, note a maximum amount of 4 */
 #define AP_MAX_CONNECTIONS  4
-#define PORT                3000
-#define LISTEN_Q            2
-#define MESSAGE             "Hello test TCP client"
+
+/* Port number of TCP-server */
+#define TCP_PORT                3000
+
+/* Maximum queue length of pending connections */
+#define LISTEN_QUEUE        2
+
+/* Size of the recvieve buffer (amount of charcters) */
+#define RECV_BUF_SIZE       64
+
+/* Pre-defined delay times, in seconds */
+#define TASK_DELAY_1     1000
+#define TASK_DELAY_5     5000
 
 const int CLIENT_CONNECTED_BIT = BIT0;
 const int CLIENT_DISCONNECTED_BIT = BIT1;
@@ -30,11 +48,12 @@ static EventGroupHandle_t wifi_event_group;
 
 
 /**
- * TODO: make function discription
+ * Handle events triggerd by the ESPs RTOS system. Called automatically on event
  *
- * @param  system_event_t *
- * @param  void *
- * @return esp_err_t
+ * @param  system_event_t *event
+ * @param  void *ctx
+ * 
+ * @return esp_err_t ESP_OK to be used in ESP_ERROR_CHECK
  */
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
@@ -63,8 +82,8 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
 }
 
 /**
- * TODO: make function discription
- *
+ * Initialization of Non-Volitile Storage
+ * 
  * @return void
  */
 void nvs_init()
@@ -80,7 +99,7 @@ void nvs_init()
 }
 
 /**
- * TODO: make function discription
+ * Initialization and start of DHCP server on 192.168.1.1
  *
  * @return void
  */
@@ -102,13 +121,14 @@ static void start_dhcp_server()
 }
 
 /**
- * TODO: make function discription
+ * Initialize a Wi-Fi Access Point
+ * Parameters can be changed in the ESP_WIFI_ and AP_ defines
  *
  * @return void
  */
 void wifi_init()
 {
-    //esp_log_level_set("wifi", ESP_LOG_NONE);
+    //esp_log_level_set("wifi", ESP_LOG_NONE); // disable wifi debug log
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
@@ -118,7 +138,7 @@ void wifi_init()
         .ap = {
             .ssid = ESP_WIFI_SSID,
             .ssid_len = strlen(ESP_WIFI_SSID),
-            .channel = 0,
+            .channel = ESP_WIFI_CHANNEL,
             .password = ESP_WIFI_PASS,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK,
             .max_connection = AP_MAX_CONNECTIONS,
@@ -138,7 +158,8 @@ void wifi_init()
 }
 
 /**
- * TODO: make function discription
+ * Start TCP-server
+ * PORT can be changed in the TCP_ define
  *
  * @param  void *
  * @return void
@@ -150,7 +171,7 @@ void tcp_server(void *pvParam)
     struct sockaddr_in tcpServerAddr;
     tcpServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     tcpServerAddr.sin_family = AF_INET;
-    tcpServerAddr.sin_port = htons(PORT);
+    tcpServerAddr.sin_port = htons(TCP_PORT);
 
     ESP_LOGI(TAG, "%u TCP server on: %u:%u with family: %u", tcpServerAddr.sin_len, tcpServerAddr.sin_addr.s_addr, tcpServerAddr.sin_port, tcpServerAddr.sin_family);
 
@@ -166,7 +187,7 @@ void tcp_server(void *pvParam)
         s = socket(AF_INET, SOCK_STREAM, 0);
         if (s < 0) {
             ESP_LOGE(TAG, "Failed to allocate socket");
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
             continue;
         }
 
@@ -174,15 +195,15 @@ void tcp_server(void *pvParam)
         if (bind(s, (struct sockaddr *)&tcpServerAddr, sizeof(tcpServerAddr)) != 0) {
             ESP_LOGE(TAG, "Socket bind failed, errno:%d", errno);
             close(s);
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
+            vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
             continue;
         }
 
         ESP_LOGI(TAG, "Socket bind done");
-        if (listen(s, LISTEN_Q) != 0) {
+        if (listen(s, LISTEN_QUEUE) != 0) {
             ESP_LOGE(TAG, "Socket listen failed errno:%d", errno);
             close(s);
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
+            vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
             continue;
         }
 
@@ -191,20 +212,21 @@ void tcp_server(void *pvParam)
             cs = accept(s, (struct sockaddr *)&remote_addr, &socklen);
             ESP_LOGI(TAG, "New connection request, request data:");
             fcntl(cs, F_SETFL, O_NONBLOCK);
+            bzero(recv_buf, sizeof(recv_buf));
             do {
-                bzero(recv_buf, sizeof(recv_buf));
                 r = recv(cs, recv_buf, sizeof(recv_buf) - 1, 0);
                 for (int i = 0; i < r; i++) {
                     putchar(recv_buf[i]);
                 }
             } while (r > 0);
+            printf("\n");
 
             ESP_LOGI(TAG, "Done reading from socket. Last read return:%d, errno:%d", r, errno);
             
-            if (write(cs, MESSAGE, strlen(MESSAGE)) < 0) {
+            if (write(cs, recv_buf, sizeof(recv_buf)) < 0) { // TODO: dont send whole recv_buf, only filled part
                 ESP_LOGE(TAG, "Send failed");
                 close(s);
-                vTaskDelay(4000 / portTICK_PERIOD_MS);
+                vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
                 continue;
             }
 
@@ -212,15 +234,15 @@ void tcp_server(void *pvParam)
             close(cs);
         }
 
-        ESP_LOGI(TAG, "Server will be opend in 5 seconds");
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+    ESP_LOGI(TAG, "Server will be opend in 5 seconds");
+    vTaskDelay(TASK_DELAY_5 / portTICK_PERIOD_MS);
     }
 
     ESP_LOGI(TAG, "tcp_client task closed");
 }
 
 /**
- * TODO: make function discription
+ * Print a list of stations connected to the Access Point
  *
  * @return void
  */
@@ -250,7 +272,7 @@ void printStationList()
 }
 
 /**
- * TODO: make function discription
+ * Print connection information of a station 
  *
  * @param  void *
  * @return void
@@ -273,7 +295,7 @@ void print_sta_info(void *pvParam)
 
 
 /**
- * TODO: make function discription
+ * Main loop
  *
  * @return void
  */
@@ -288,5 +310,4 @@ void app_main()
 
     xTaskCreate(&tcp_server, "tcp_server", 4096, NULL, 5, NULL);
     xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
-
 }
