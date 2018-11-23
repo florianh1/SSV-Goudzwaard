@@ -14,6 +14,8 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
+#include <ssv_camera.h>
+
 /* Wi-Fi SSID, note a maximum character length of 32 */
 #define ESP_WIFI_SSID       "SSV_GoudZwaard"
 
@@ -27,7 +29,7 @@
 #define AP_MAX_CONNECTIONS  4
 
 /* Port number of TCP-server */
-#define TCP_PORT                3000
+#define TCP_PORT            3000
 
 /* Maximum queue length of pending connections */
 #define LISTEN_QUEUE        2
@@ -36,21 +38,20 @@
 #define RECV_BUF_SIZE       64
 
 /* Pre-defined delay times, in seconds */
-#define TASK_DELAY_1     1000
-#define TASK_DELAY_5     5000
-
-const int CLIENT_CONNECTED_BIT = BIT0;
-const int CLIENT_DISCONNECTED_BIT = BIT1;
-const int AP_STARTED_BIT = BIT2;
+#define TASK_DELAY_1        1000
+#define TASK_DELAY_5        5000
 
 static const char *TAG = "Wifi";
 static EventGroupHandle_t wifi_event_group;
 
+const uint32_t CLIENT_CONNECTED_BIT = BIT0;
+const uint32_t CLIENT_DISCONNECTED_BIT = BIT1;
+const uint32_t AP_STARTED_BIT = BIT2;
 
 /**
  * Handle events triggerd by the ESPs RTOS system. Called automatically on event
  *
- * @param  system_event_t *event
+ * @param  system_event_t *events
  * @param  void *ctx
  * 
  * @return esp_err_t ESP_OK to be used in ESP_ERROR_CHECK
@@ -72,9 +73,6 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         printf("Event: station disconnected from AP\n");
 		xEventGroupSetBits(wifi_event_group, CLIENT_DISCONNECTED_BIT);
 		break;
-    case SYSTEM_EVENT_AP_PROBEREQRECVED:
-        printf("Event: probe request recieved\n");
-        break;	
     default:
         break;
     }
@@ -98,27 +96,6 @@ void nvs_init()
     ESP_LOGI("NVS init", "NVS setup finished...");
 }
 
-/**
- * Initialization and start of DHCP server on 192.168.1.1
- *
- * @return void
- */
-static void start_dhcp_server()
-{
-    tcpip_adapter_init();
-
-    ESP_ERROR_CHECK(tcpip_adapter_dhcps_stop(TCPIP_ADAPTER_IF_AP));
-
-    tcpip_adapter_ip_info_t info;
-    memset(&info, 0, sizeof(info));
-    IP4_ADDR(&info.ip, 192, 168, 1, 1);
-    IP4_ADDR(&info.gw, 192, 168, 1, 1);
-    IP4_ADDR(&info.netmask, 255, 255, 255, 0);
-    ESP_ERROR_CHECK(tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_AP, &info));
-
-    ESP_ERROR_CHECK(tcpip_adapter_dhcps_start(TCPIP_ADAPTER_IF_AP));
-    ESP_LOGI(TAG, "DHCP server started");
-}
 
 /**
  * Initialize a Wi-Fi Access Point
@@ -126,7 +103,7 @@ static void start_dhcp_server()
  *
  * @return void
  */
-void wifi_init()
+void AP_init()
 {
     //esp_log_level_set("wifi", ESP_LOG_NONE); // disable wifi debug log
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -155,6 +132,28 @@ void wifi_init()
 
     ESP_LOGI(TAG, "wifi setup finished. SSID: %s pass: %s",
             wifi_config.ap.ssid, wifi_config.ap.password);
+}
+
+/**
+ * Initialization and start of DHCP server on 192.168.1.1
+ *
+ * @return void
+ */
+void start_dhcp_server()
+{
+    tcpip_adapter_init();
+
+    ESP_ERROR_CHECK(tcpip_adapter_dhcps_stop(TCPIP_ADAPTER_IF_AP));
+
+    tcpip_adapter_ip_info_t info;
+    memset(&info, 0, sizeof(info));
+    IP4_ADDR(&info.ip, 192, 168, 1, 1);
+    IP4_ADDR(&info.gw, 192, 168, 1, 1);
+    IP4_ADDR(&info.netmask, 255, 255, 255, 0);
+    ESP_ERROR_CHECK(tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_AP, &info));
+
+    ESP_ERROR_CHECK(tcpip_adapter_dhcps_start(TCPIP_ADAPTER_IF_AP));
+    ESP_LOGI(TAG, "DHCP server started");
 }
 
 /**
@@ -246,7 +245,7 @@ void tcp_server(void *pvParam)
  *
  * @return void
  */
-void printStationList()
+void print_connected_stations()
 {
     printf("\nConnected stations:\n");
     printf("--------------------------------------------------\n");
@@ -289,10 +288,9 @@ void print_sta_info(void *pvParam)
             ESP_LOGI(TAG, "A station disconnected");
         }
 
-        printStationList();
+        print_connected_stations();
     }
 }
-
 
 /**
  * Main loop
@@ -306,7 +304,7 @@ void app_main()
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
     wifi_event_group = xEventGroupCreate();
     start_dhcp_server();
-    wifi_init();
+    AP_init();
 
     xTaskCreate(&tcp_server, "tcp_server", 4096, NULL, 5, NULL);
     xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
