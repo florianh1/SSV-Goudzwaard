@@ -1,6 +1,6 @@
 # SSV-Goudzwaard
 
-SSV Goudzwaard is a wireless model submarine controlled by an application on an android phone. In deze repository kan de sourcecode voor het compileren van de firmware van de ESP32 in de duikboot gevonden worden.
+SSV Goudzwaard is a wireless model submarine controlled by an application on an android phone. In this repository the source code for compiling the firmware of the ESP32 in the submarine can be found.
 
 To compile and flash:
 
