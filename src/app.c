@@ -26,7 +26,7 @@
 #define ESP_WIFI_CHANNEL    0
 
 /* Amount of Access Point connections, note a maximum amount of 4 */
-#define AP_MAX_CONNECTIONS  4
+#define AP_MAX_CONNECTIONS  1 // TODO: test if only one connection is possible
 
 /* Port number of TCP-server */
 #define TCP_PORT            3000
