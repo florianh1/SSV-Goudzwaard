@@ -52,6 +52,14 @@ const int AP_STARTED_BIT = BIT2;
 static const char *TAG = "Wifi";
 static EventGroupHandle_t wifi_event_group;
 
+SemaphoreHandle_t xJoystickSemaphore = NULL;
+SemaphoreHandle_t yJoystickSemaphore = NULL;
+SemaphoreHandle_t scrollbarSemaphore = NULL;
+
+uint8_t joystick_y;
+uint8_t joystick_x;
+uint8_t scrollbar;
+
 /**
  * Handle events triggerd by the ESPs RTOS system. Called automatically on event
  *
@@ -342,13 +350,73 @@ void blink_task(void *pvParameter)
 }
 
 /**
+ * Control syringe task
+ * 
+ * This task is responsible for controlling the syringe. The task is therefore responsible for diving the submarine.
+ *
+ * @return void
+ */
+void control_syringe_task(void *pvParameter)
+{
+    static const char *TASK_TAG = "control_syringe_task";
+
+    while (1)
+    {
+        if (scrollbarSemaphore != NULL)
+        {
+            if (xSemaphoreTake(scrollbarSemaphore, (TickType_t)10) == pdTRUE)
+            {
+                ESP_LOGI(TASK_TAG, "scrollbar: %d", scrollbar);
+                xSemaphoreGive(scrollbarSemaphore);
+            }
+        }
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+/**
+ * Control engines task
+ * 
+ * This task is responsible for controlling the engines. This task determines which way the submarine will move and how fast.
+ *
+ * @return void
+ */
+void control_engines_task(void *pvParameter)
+{
+    static const char *TASK_TAG = "control_engines_task";
+    while (1)
+    {
+        if (yJoystickSemaphore != NULL)
+        {
+            if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE)
+            {
+                ESP_LOGI(TASK_TAG, "joystick_y: %d", joystick_y);
+                xSemaphoreGive(yJoystickSemaphore);
+            }
+        }
+        if (xJoystickSemaphore != NULL)
+        {
+            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE)
+            {
+                ESP_LOGI(TASK_TAG, "joystick_x: %d", joystick_x);
+                xSemaphoreGive(xJoystickSemaphore);
+            }
+        }
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+/**
  * receive control task
  *
  * @return void
  */
 void receive_control_task(void *pvParameter)
 {
-    ESP_LOGI(TAG, "receive_control_task task started");
+    static const char *TASK_TAG = "receive_control_task";
+    ESP_LOGI(TASK_TAG, "receive_control_task task started");
 
     char rx_buffer[128];
     char addr_str[128];
@@ -357,13 +425,8 @@ void receive_control_task(void *pvParameter)
 
     int payload;
 
-    uint8_t joystick_y;
-    uint8_t joystick_x;
-    uint8_t scrollbar;
-
     while (1)
     {
-
         struct sockaddr_in destAddr;
         destAddr.sin_addr.s_addr = htonl(INADDR_ANY);
         destAddr.sin_family = AF_INET;
@@ -375,22 +438,22 @@ void receive_control_task(void *pvParameter)
         int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
         if (sock < 0)
         {
-            ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
+            ESP_LOGE(TASK_TAG, "Unable to create socket: errno %d", errno);
             break;
         }
-        ESP_LOGI(TAG, "Socket created");
+        ESP_LOGI(TASK_TAG, "Socket created");
 
         int err = bind(sock, (struct sockaddr *)&destAddr, sizeof(destAddr));
         if (err < 0)
         {
-            ESP_LOGE(TAG, "Socket unable to bind: errno %d", errno);
+            ESP_LOGE(TASK_TAG, "Socket unable to bind: errno %d", errno);
         }
-        ESP_LOGI(TAG, "Socket binded");
+        ESP_LOGI(TASK_TAG, "Socket binded");
 
         while (1)
         {
+            //ESP_LOGI(TASK_TAG, "receive_control_task waiting for data");
 
-            ESP_LOGI(TAG, "receive_control_task waiting for data");
             struct sockaddr_in6 sourceAddr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(sourceAddr);
             int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&sourceAddr, &socklen);
@@ -398,7 +461,7 @@ void receive_control_task(void *pvParameter)
             // Error occured during receiving
             if (len < 0)
             {
-                ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
+                ESP_LOGE(TASK_TAG, "recvfrom failed: errno %d", errno);
                 break;
             }
             // Data received
@@ -415,23 +478,44 @@ void receive_control_task(void *pvParameter)
                 }
 
                 rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
+                
+                //ESP_LOGI(TASK_TAG, "Received %d bytes from %s:", len, addr_str);
+                //ESP_LOGI(TASK_TAG, "%s", rx_buffer);
 
-                // extract rx_buffer to payload 
+                // extract rx_buffer to payload
                 sscanf(rx_buffer, "%d", &payload);
 
                 // extract payload to values
-                scrollbar = payload & 0x3F;
-                joystick_y = (payload >> 6) & 0x7;
-                joystick_x = (payload >> 9) & 0x7;
 
-                ESP_LOGI(TAG, "scrollbar: %d", scrollbar);
-                ESP_LOGI(TAG, "joystick_y: %d", joystick_y);
-                ESP_LOGI(TAG, "joystick_x: %d", joystick_x);
+                if (scrollbarSemaphore != NULL)
+                {
+                    if (xSemaphoreTake(scrollbarSemaphore, (TickType_t)1) == pdTRUE)
+                    {
+                        scrollbar = payload & 0x3F;
+                        xSemaphoreGive(scrollbarSemaphore);
+                    }
+                }
+                if (yJoystickSemaphore != NULL)
+                {
+                    if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)1) == pdTRUE)
+                    {
+                        joystick_y = (payload >> 6) & 0x7;
+                        xSemaphoreGive(yJoystickSemaphore);
+                    }
+                }
+                if (xJoystickSemaphore != NULL)
+                {
+                    if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)1) == pdTRUE)
+                    {
+                        joystick_x = (payload >> 9) & 0x7;
+                        xSemaphoreGive(xJoystickSemaphore);
+                    }
+                }
 
                 int err = sendto(sock, rx_buffer, len, 0, (struct sockaddr *)&sourceAddr, sizeof(sourceAddr));
                 if (err < 0)
                 {
-                    ESP_LOGE(TAG, "Error occured during sending: errno %d", errno);
+                    ESP_LOGE(TASK_TAG, "Error occured during sending: errno %d", errno);
                     break;
                 }
             }
@@ -439,7 +523,7 @@ void receive_control_task(void *pvParameter)
 
         if (sock != -1)
         {
-            ESP_LOGE(TAG, "Shutting down socket and restarting...");
+            ESP_LOGE(TASK_TAG, "Shutting down socket and restarting...");
             shutdown(sock, 0);
             close(sock);
         }
@@ -454,6 +538,42 @@ void receive_control_task(void *pvParameter)
  */
 void app_main()
 {
+    static const char *APP_MAIN_TAG = "receive_control_task";
+
+    xJoystickSemaphore = xSemaphoreCreateMutex();
+    yJoystickSemaphore = xSemaphoreCreateMutex();
+    scrollbarSemaphore = xSemaphoreCreateMutex();
+
+    if (xJoystickSemaphore == NULL)
+    {
+        /* There was insufficient FreeRTOS heap available for the semaphore to be created successfully. */
+    }
+    else
+    {
+        /* The semaphore can now be used. Its handle is stored in the xJoystickSemaphore variable.  Calling xSemaphoreTake() on the semaphore here will fail until the semaphore has first been given. */
+        ESP_LOGI(APP_MAIN_TAG, "xJoystickSemaphore created");
+    }
+
+    if (yJoystickSemaphore == NULL)
+    {
+        /* There was insufficient FreeRTOS heap available for the semaphore to be created successfully. */
+    }
+    else
+    {
+        /* The semaphore can now be used. Its handle is stored in the yJoystickSemaphore variable.  Calling xSemaphoreTake() on the semaphore here will fail until the semaphore has first been given. */
+        ESP_LOGI(APP_MAIN_TAG, "yJoystickSemaphore created");
+    }
+
+    if (scrollbarSemaphore == NULL)
+    {
+        /* There was insufficient FreeRTOS heap available for the semaphore to be created successfully. */
+    }
+    else
+    {
+        /* The semaphore can now be used. Its handle is stored in the scrollbarSemaphore variable.  Calling xSemaphoreTake() on the semaphore here will fail until the semaphore has first been given. */
+        ESP_LOGI(APP_MAIN_TAG, "scrollbarSemaphore created");
+    }
+
     // Start blink task for testing
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
 
@@ -467,6 +587,8 @@ void app_main()
     wifi_init();
 
     xTaskCreate(&receive_control_task, "receive_control_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&control_engines_task, "control_engines_task", 4096, NULL, 5, NULL);
 
     //xTaskCreate(&tcp_server, "tcp_server", 4096, NULL, 5, NULL);
     //xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
