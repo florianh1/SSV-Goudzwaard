@@ -14,6 +14,10 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
+#include "../include/motor.h"
+// #include "motor.c"
+
+
 /* Bling GPIO pin */
 #define BLINK_GPIO 2
 
@@ -603,6 +607,10 @@ void battery_percentage_transmit_task(void *pvParameter)
  */
 void app_main()
 {
+    xTaskCreate(motor_task, "motor_task", 4096, NULL, 5, NULL);
+
+    while(1);
+
     static const char *APP_MAIN_TAG = "app_main";
 
     xJoystickSemaphore = xSemaphoreCreateMutex();
