@@ -15,8 +15,6 @@
 #include <lwip/netdb.h>
 
 #include "../include/motor.h"
-// #include "motor.c"
-
 
 /* Bling GPIO pin */
 #define BLINK_GPIO 2

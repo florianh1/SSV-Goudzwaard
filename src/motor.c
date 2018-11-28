@@ -14,10 +14,6 @@
 
 #include "../include/motor.h"
 
-//pin definitions of the pwm pins
-#define GPIO_PWM0A_OUT 15   //Set GPIO 15 as PWM0A
-#define GPIO_PWM0B_OUT 16   //Set GPIO 16 as PWM0B
-
 /**
  * controls the speed motors
  * 
@@ -26,7 +22,6 @@
  */
 void motor_task(void *arg)
 {
-    
     printf("Testing brushed motor...\n");
     //1. mcpwm gpio initialization
     mcpwm_example_gpio_initialize();
@@ -100,4 +95,3 @@ void brushed_motor_stop(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num)
     mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
     mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_B);
 }
-
