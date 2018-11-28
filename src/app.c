@@ -177,98 +177,6 @@ void wifi_init()
 }
 
 /**
- * Start TCP-server
- * PORT can be changed in the TCP_ define
- *
- * @param  void *
- * @return void
- */
-void tcp_server(void *pvParam)
-{
-    ESP_LOGI(TAG, "tcp_server task started");
-
-    struct sockaddr_in tcpServerAddr;
-    tcpServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    tcpServerAddr.sin_family = AF_INET;
-    tcpServerAddr.sin_port = htons(TCP_PORT);
-
-    ESP_LOGI(TAG, "%u TCP server on: %u:%u with family: %u", tcpServerAddr.sin_len, tcpServerAddr.sin_addr.s_addr, tcpServerAddr.sin_port, tcpServerAddr.sin_family);
-
-    int s, r, cs; // socket, recieve, client socket
-    char recv_buf[64];
-    static struct sockaddr_in remote_addr;
-    static unsigned int socklen;
-    socklen = sizeof(remote_addr);
-
-    xEventGroupWaitBits(wifi_event_group, AP_STARTED_BIT, false, true, portMAX_DELAY);
-
-    while (1)
-    {
-        s = socket(AF_INET, SOCK_STREAM, 0);
-        if (s < 0)
-        {
-            ESP_LOGE(TAG, "Failed to allocate socket");
-            vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        ESP_LOGI(TAG, "Allocated socket");
-        if (bind(s, (struct sockaddr *)&tcpServerAddr, sizeof(tcpServerAddr)) != 0)
-        {
-            ESP_LOGE(TAG, "Socket bind failed, errno:%d", errno);
-            close(s);
-            vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        ESP_LOGI(TAG, "Socket bind done");
-        if (listen(s, LISTEN_QUEUE) != 0)
-        {
-            ESP_LOGE(TAG, "Socket listen failed errno:%d", errno);
-            close(s);
-            vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        while (1)
-        {
-            ESP_LOGI(TAG, "Now accepting socket connections...");
-            cs = accept(s, (struct sockaddr *)&remote_addr, &socklen);
-            ESP_LOGI(TAG, "New connection request, request data:");
-            fcntl(cs, F_SETFL, O_NONBLOCK);
-            bzero(recv_buf, sizeof(recv_buf));
-            do
-            {
-                r = recv(cs, recv_buf, sizeof(recv_buf) - 1, 0);
-                for (int i = 0; i < r; i++)
-                {
-                    putchar(recv_buf[i]);
-                }
-            } while (r > 0);
-            printf("\n");
-
-            ESP_LOGI(TAG, "Done reading from socket. Last read return:%d, errno:%d", r, errno);
-
-            if (write(cs, recv_buf, sizeof(recv_buf)) < 0)
-            { // TODO: dont send whole recv_buf, only filled part
-                ESP_LOGE(TAG, "Send failed");
-                close(s);
-                vTaskDelay(TASK_DELAY_1 / portTICK_PERIOD_MS);
-                continue;
-            }
-
-            ESP_LOGI(TAG, "Socket send success");
-            close(cs);
-        }
-
-        ESP_LOGI(TAG, "Server will be opend in 5 seconds");
-        vTaskDelay(TASK_DELAY_5 / portTICK_PERIOD_MS);
-    }
-
-    ESP_LOGI(TAG, "tcp_client task closed");
-}
-
-/**
  * Print a list of stations connected to the Access Point
  *
  * @return void
@@ -307,7 +215,9 @@ void printStationList()
  */
 void print_sta_info(void *pvParam)
 {
-    ESP_LOGI(TAG, "print_sta_info task started \n");
+    static const char *TASK_TAG = "print_sta_info";
+    ESP_LOGI(TASK_TAG, "task started \n");
+
     while (1)
     {
         EventBits_t staBits = xEventGroupWaitBits(wifi_event_group, CLIENT_CONNECTED_BIT | CLIENT_DISCONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
@@ -570,7 +480,7 @@ void battery_percentage_transmit_task(void *pvParameter)
             break;
         }
         ESP_LOGI(TASK_TAG, "Socket created");
-        
+
         while (1)
         {
             sprintf(tx_buffer, "%d", battery_percentage);
@@ -581,7 +491,7 @@ void battery_percentage_transmit_task(void *pvParameter)
                 break;
             }
             ESP_LOGI(TASK_TAG, "battery percentage sent");
-            
+
             // transmit every 10 seconds
             vTaskDelay(10000 / portTICK_PERIOD_MS);
         }
@@ -667,6 +577,5 @@ void app_main()
     xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, NULL);
     xTaskCreate(&control_engines_task, "control_engines_task", 4096, NULL, 5, NULL);
 
-    //xTaskCreate(&tcp_server, "tcp_server", 4096, NULL, 5, NULL);
-    //xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
+    xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
 }
