@@ -36,7 +36,7 @@ void motor_task(void *arg)
     pwm_config.duty_mode = MCPWM_DUTY_MODE_0;
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);    //Configure PWM0A & PWM0B with above settings
     while (1) {
-        brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, 50.0);
+        brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, 100.0);
         vTaskDelay(2000 / portTICK_RATE_MS);
         brushed_motor_backward(MCPWM_UNIT_0, MCPWM_TIMER_0, 30.0);
         vTaskDelay(2000 / portTICK_RATE_MS);
