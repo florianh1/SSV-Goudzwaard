@@ -16,7 +16,7 @@ const int CLIENT_CONNECTED_BIT = BIT0;
 const int CLIENT_DISCONNECTED_BIT = BIT1;
 const int AP_STARTED_BIT = BIT2;
 
-static const char *TAG = "Wifi";
+static const char* TAG = "Wifi";
 
 /**
  * Handle events triggerd by the ESPs RTOS system. Called automatically on event
@@ -26,10 +26,9 @@ static const char *TAG = "Wifi";
  * 
  * @return esp_err_t ESP_OK to be used in ESP_ERROR_CHECK
  */
- esp_err_t event_handler(void *ctx, system_event_t *event)
+esp_err_t event_handler(void* ctx, system_event_t* event)
 {
-    switch (event->event_id)
-    {
+    switch (event->event_id) {
     case SYSTEM_EVENT_AP_START:
         printf("Event: ESP32 is started in AP mode\n");
         xEventGroupSetBits(wifi_event_group, AP_STARTED_BIT);
@@ -78,8 +77,7 @@ void wifi_init()
         },
     };
 
-    if (strlen(ESP_WIFI_SSID) == 0)
-    {
+    if (strlen(ESP_WIFI_SSID) == 0) {
         ESP_LOGW(TAG, "Password lenght is 0, changing authmode to OPEN...");
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }
@@ -88,7 +86,7 @@ void wifi_init()
     ESP_ERROR_CHECK(esp_wifi_start());
 
     ESP_LOGI(TAG, "wifi setup finished. SSID: %s pass: %s",
-             wifi_config.ap.ssid, wifi_config.ap.password);
+        wifi_config.ap.ssid, wifi_config.ap.password);
 }
 
 /**
@@ -110,13 +108,12 @@ void printStationList()
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&wifi_sta_list));
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&wifi_sta_list, &adapter_sta_list));
 
-    for (int i = 0; i < adapter_sta_list.num; i++)
-    {
+    for (int i = 0; i < adapter_sta_list.num; i++) {
         tcpip_adapter_sta_info_t station = adapter_sta_list.sta[i];
         printf("%d - mac: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x - IP: %s\n", i + 1,
-               station.mac[0], station.mac[1], station.mac[2],
-               station.mac[3], station.mac[4], station.mac[5],
-               ip4addr_ntoa(&(station.ip)));
+            station.mac[0], station.mac[1], station.mac[2],
+            station.mac[3], station.mac[4], station.mac[5],
+            ip4addr_ntoa(&(station.ip)));
     }
 
     printf("\n");
@@ -150,21 +147,17 @@ void start_dhcp_server()
  * @param  void *
  * @return void
  */
-void print_sta_info(void *pvParam)
+void print_sta_info(void* pvParam)
 {
-    static const char *TASK_TAG = "print_sta_info";
+    static const char* TASK_TAG = "print_sta_info";
     ESP_LOGI(TASK_TAG, "task started \n");
 
-    while (1)
-    {
+    while (1) {
         EventBits_t staBits = xEventGroupWaitBits(wifi_event_group, CLIENT_CONNECTED_BIT | CLIENT_DISCONNECTED_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
 
-        if ((staBits & CLIENT_CONNECTED_BIT) != 0)
-        {
+        if ((staBits & CLIENT_CONNECTED_BIT) != 0) {
             ESP_LOGI(TAG, "New station connected");
-        }
-        else
-        {
+        } else {
             ESP_LOGI(TAG, "A station disconnected");
         }
 

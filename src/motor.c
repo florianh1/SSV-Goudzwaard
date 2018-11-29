@@ -45,6 +45,12 @@ void control_engines_task(void* pvParameter)
     ESP_LOGI(TASK_TAG, "task started");
 
     while (1) {
+        if (xJoystickSemaphore != NULL) {
+            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE) {
+                ESP_LOGI(TASK_TAG, "joystick_x: %d", joystick_x);
+                xSemaphoreGive(xJoystickSemaphore);
+            }
+        }
 
         if (yJoystickSemaphore != NULL) {
             if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE) {

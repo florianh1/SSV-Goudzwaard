@@ -18,9 +18,9 @@ extern uint8_t battery_percentage;
  *
  * @return void
  */
-void battery_percentage_transmit_task(void *pvParameter)
+void battery_percentage_transmit_task(void* pvParameter)
 {
-    static const char *TASK_TAG = "battery_percentage_transmit_task";
+    static const char* TASK_TAG = "battery_percentage_transmit_task";
     ESP_LOGI(TASK_TAG, "task started");
 
     char tx_buffer[20];
@@ -28,8 +28,7 @@ void battery_percentage_transmit_task(void *pvParameter)
     int addr_family;
     int ip_protocol;
 
-    while (1)
-    {
+    while (1) {
         struct sockaddr_in destAddr;
         destAddr.sin_addr.s_addr = inet_addr("192.168.1.2"); //TODO: set correct address addres is most of time 192.168.1.2
         destAddr.sin_family = AF_INET;
@@ -39,19 +38,16 @@ void battery_percentage_transmit_task(void *pvParameter)
         inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
 
         int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
-        if (sock < 0)
-        {
+        if (sock < 0) {
             ESP_LOGE(TASK_TAG, "Unable to create socket: errno %d", errno);
             break;
         }
         ESP_LOGI(TASK_TAG, "Socket created");
 
-        while (1)
-        {
+        while (1) {
             sprintf(tx_buffer, "%d", battery_percentage);
-            int err = sendto(sock, &tx_buffer, strlen(tx_buffer), 0, (struct sockaddr *)&destAddr, sizeof(destAddr));
-            if (err < 0)
-            {
+            int err = sendto(sock, &tx_buffer, strlen(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
+            if (err < 0) {
                 ESP_LOGE(TASK_TAG, "Error occured during sending pattery percentage: errno %d", errno);
                 break;
             }
@@ -61,8 +57,7 @@ void battery_percentage_transmit_task(void *pvParameter)
             vTaskDelay(10000 / portTICK_PERIOD_MS);
         }
 
-        if (sock != -1)
-        {
+        if (sock != -1) {
             ESP_LOGE(TASK_TAG, "Shutting down socket and restarting...");
             shutdown(sock, 0);
             close(sock);
