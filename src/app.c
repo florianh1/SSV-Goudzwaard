@@ -19,6 +19,7 @@
 #include <syringe.h>
 #include <blink.h>
 #include <wifi.h>
+#include <motor.h>
 
 SemaphoreHandle_t xJoystickSemaphore = NULL;
 SemaphoreHandle_t yJoystickSemaphore = NULL;
@@ -48,43 +49,6 @@ void nvs_init()
     ESP_ERROR_CHECK(ret);
 
     ESP_LOGI("NVS init", "NVS setup finished...");
-}
-
-/**
- * Control engines task
- * 
- * This task is responsible for controlling the engines. This task determines which way the submarine will move and how fast.
- * 
- * //TODO: move to motor.c
- *
- * @return void
- */
-void control_engines_task(void *pvParameter)
-{
-    static const char *TASK_TAG = "control_engines_task";
-    ESP_LOGI(TASK_TAG, "task started");
-
-    while (1)
-    {
-        if (yJoystickSemaphore != NULL)
-        {
-            if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE)
-            {
-                ESP_LOGI(TASK_TAG, "joystick_y: %d", joystick_y);
-                xSemaphoreGive(yJoystickSemaphore);
-            }
-        }
-        if (xJoystickSemaphore != NULL)
-        {
-            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE)
-            {
-                ESP_LOGI(TASK_TAG, "joystick_x: %d", joystick_x);
-                xSemaphoreGive(xJoystickSemaphore);
-            }
-        }
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
 }
 
 /**
