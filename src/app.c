@@ -120,7 +120,7 @@ void app_main()
     xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 4096, NULL, 5, NULL);
     xTaskCreate(&receive_control_task, "receive_control_task", 4096, NULL, 5, NULL);
     xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&control_engines_task, "control_engines_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&motor_task, "motor_task", 4096, NULL, 5, NULL);
 
     xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
 }
