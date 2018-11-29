@@ -32,35 +32,25 @@ extern uint8_t battery_percentage;
  *
  * @return void
  */
-void control_engines_task(void *pvParameter)
+void control_engines_task(void* pvParameter)
 {
-    static const char *TASK_TAG = "control_engines_task";
+    static const char* TASK_TAG = "control_engines_task";
     ESP_LOGI(TASK_TAG, "task started");
 
-    while (1)
-    {
-        if (xJoystickSemaphore != NULL)
-        {
-            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE)
-            {
+    while (1) {
+        if (xJoystickSemaphore != NULL) {
+            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE) {
                 ESP_LOGI(TASK_TAG, "joystick_x: %d", joystick_x);
                 xSemaphoreGive(xJoystickSemaphore);
-
-                
-
-
             }
         }
 
-        if (yJoystickSemaphore != NULL)
-        {
-            if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE)
-            {
+        if (yJoystickSemaphore != NULL) {
+            if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE) {
                 ESP_LOGI(TASK_TAG, "joystick_y: %d", joystick_y);
                 xSemaphoreGive(yJoystickSemaphore);
             }
         }
-        
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
@@ -72,7 +62,7 @@ void control_engines_task(void *pvParameter)
  * @ param void *
  * @ return void 
  */
-void motor_task(void *arg)
+void motor_task(void* arg)
 {
     printf("Testing brushed motor...\n");
     //1. mcpwm gpio initialization
@@ -81,24 +71,18 @@ void motor_task(void *arg)
     //2. initial mcpwm configuration
     printf("Configuring Initial Parameters of mcpwm...\n");
     mcpwm_config_t pwm_config;
-    pwm_config.frequency = 1000;    //frequency = 500Hz,
-    pwm_config.cmpr_a = 0;    //duty cycle of PWMxA = 0
-    pwm_config.cmpr_b = 0;    //duty cycle of PWMxb = 0
+    pwm_config.frequency = 1000; //frequency = 500Hz,
+    pwm_config.cmpr_a = 0; //duty cycle of PWMxA = 0
+    pwm_config.cmpr_b = 0; //duty cycle of PWMxb = 0
     pwm_config.counter_mode = MCPWM_UP_COUNTER;
     pwm_config.duty_mode = MCPWM_DUTY_MODE_0;
-    mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);    //Configure PWM0A & PWM0B with above settings
+    mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config); //Configure PWM0A & PWM0B with above settings
     while (1) {
-
-
-        if(vooruit){
         brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, 100.0);
-        } else if(a){
-            brushed_motor_backward(MCPWM_UNIT_0, MCPWM_TIMER_0, 30.0);
-
-        } else {
-            brushed_motor_stop(MCPWM_UNIT_0, MCPWM_TIMER_0);
-        }
-
+        vTaskDelay(2000 / portTICK_RATE_MS);
+        brushed_motor_backward(MCPWM_UNIT_0, MCPWM_TIMER_0, 30.0);
+        vTaskDelay(2000 / portTICK_RATE_MS);
+        brushed_motor_stop(MCPWM_UNIT_0, MCPWM_TIMER_0);
         vTaskDelay(2000 / portTICK_RATE_MS);
     }
 }
@@ -113,12 +97,8 @@ void mcpwm_example_gpio_initialize()
 {
     printf("initializing mcpwm gpio...\n");
     //right motor
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, GPIO_PWM0AR_OUT);
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, GPIO_PWM0BR_OUT);
-    
-    //left motor
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, GPIO_PWM0AL_OUT);
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, GPIO_PWM0BL_OUT);
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, GPIO_PWM0A_OUT);
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, GPIO_PWM0B_OUT);
 }
 
 /**
@@ -127,7 +107,7 @@ void mcpwm_example_gpio_initialize()
  * @ param void *
  * @ return void 
  */
-void brushed_motor_forward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num , float duty_cycle)
+void brushed_motor_forward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, float duty_cycle)
 {
     mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_B);
     mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_A, duty_cycle);
@@ -140,11 +120,11 @@ void brushed_motor_forward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num , flo
  * @ param void *
  * @ return void 
 */
-void brushed_motor_backward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num , float duty_cycle)
+void brushed_motor_backward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, float duty_cycle)
 {
     mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
     mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_B, duty_cycle);
-    mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);  //call this each time, if operator was previously in low/high state
+    mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_B, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
 }
 
 /**

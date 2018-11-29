@@ -17,17 +17,14 @@ extern uint8_t battery_percentage;
  *
  * @return void
  */
-void control_syringe_task(void *pvParameter)
+void control_syringe_task(void* pvParameter)
 {
-    static const char *TASK_TAG = "control_syringe_task";
+    static const char* TASK_TAG = "control_syringe_task";
     ESP_LOGI(TASK_TAG, "task started");
 
-    while (1)
-    {
-        if (scrollbarSemaphore != NULL)
-        {
-            if (xSemaphoreTake(scrollbarSemaphore, (TickType_t)10) == pdTRUE)
-            {
+    while (1) {
+        if (scrollbarSemaphore != NULL) {
+            if (xSemaphoreTake(scrollbarSemaphore, (TickType_t)10) == pdTRUE) {
                 ESP_LOGI(TASK_TAG, "scrollbar: %d", scrollbar);
                 xSemaphoreGive(scrollbarSemaphore);
             }

@@ -1,13 +1,13 @@
-#include <string.h>
-#include <sys/param.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
 #include "esp_event_loop.h"
 #include "esp_log.h"
+#include "esp_system.h"
+#include "esp_wifi.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+#include "freertos/task.h"
 #include "nvs_flash.h"
+#include <string.h>
+#include <sys/param.h>
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -15,11 +15,11 @@
 #include <lwip/netdb.h>
 
 #include <battery.h>
-#include <controls.h>
-#include <syringe.h>
 #include <blink.h>
-#include <wifi.h>
+#include <controls.h>
 #include <motor.h>
+#include <syringe.h>
+#include <wifi.h>
 
 SemaphoreHandle_t xJoystickSemaphore = NULL;
 SemaphoreHandle_t yJoystickSemaphore = NULL;
@@ -31,7 +31,8 @@ uint8_t joystick_x = 4;
 uint8_t scrollbar = 0;
 uint8_t battery_percentage = 94;
 
-extern EventGroupHandle_t wifi_event_group;;
+extern EventGroupHandle_t wifi_event_group;
+;
 
 /**
  * Initialization of Non-Volitile Storage
@@ -41,8 +42,7 @@ extern EventGroupHandle_t wifi_event_group;;
 void nvs_init()
 {
     esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
@@ -58,49 +58,37 @@ void nvs_init()
  */
 void app_main()
 {
-    static const char *APP_MAIN_TAG = "app_main";
+    static const char* APP_MAIN_TAG = "app_main";
 
     xJoystickSemaphore = xSemaphoreCreateMutex();
     yJoystickSemaphore = xSemaphoreCreateMutex();
     scrollbarSemaphore = xSemaphoreCreateMutex();
     batteryPercentageSemaphore = xSemaphoreCreateMutex();
 
-    if (xJoystickSemaphore == NULL)
-    {
+    if (xJoystickSemaphore == NULL) {
         /* There was insufficient FreeRTOS heap available for the semaphore to be created successfully. */
-    }
-    else
-    {
+    } else {
         /* The semaphore can now be used. Its handle is stored in the xJoystickSemaphore variable.  Calling xSemaphoreTake() on the semaphore here will fail until the semaphore has first been given. */
         ESP_LOGI(APP_MAIN_TAG, "xJoystickSemaphore created");
     }
 
-    if (yJoystickSemaphore == NULL)
-    {
+    if (yJoystickSemaphore == NULL) {
         /* There was insufficient FreeRTOS heap available for the semaphore to be created successfully. */
-    }
-    else
-    {
+    } else {
         /* The semaphore can now be used. Its handle is stored in the yJoystickSemaphore variable.  Calling xSemaphoreTake() on the semaphore here will fail until the semaphore has first been given. */
         ESP_LOGI(APP_MAIN_TAG, "yJoystickSemaphore created");
     }
 
-    if (scrollbarSemaphore == NULL)
-    {
+    if (scrollbarSemaphore == NULL) {
         /* There was insufficient FreeRTOS heap available for the semaphore to be created successfully. */
-    }
-    else
-    {
+    } else {
         /* The semaphore can now be used. Its handle is stored in the scrollbarSemaphore variable.  Calling xSemaphoreTake() on the semaphore here will fail until the semaphore has first been given. */
         ESP_LOGI(APP_MAIN_TAG, "scrollbarSemaphore created");
     }
 
-    if (batteryPercentageSemaphore == NULL)
-    {
+    if (batteryPercentageSemaphore == NULL) {
         /* There was insufficient FreeRTOS heap available for the semaphore to be created successfully. */
-    }
-    else
-    {
+    } else {
         /* The semaphore can now be used. Its handle is stored in the batteryPercentageSemaphore variable.  Calling xSemaphoreTake() on the semaphore here will fail until the semaphore has first been given. */
         ESP_LOGI(APP_MAIN_TAG, "batteryPercentageSemaphore created");
     }
