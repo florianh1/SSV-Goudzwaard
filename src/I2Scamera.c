@@ -97,7 +97,9 @@ uint16_t* camera_getLine(uint16_t lineno)
     if (!s_initialized) {
         return NULL;
     }
-    unsigned long time = millis();
+
+    // unsigned long time = millis(); //@TODO: replace by xTaskGetTickCount?
+    TickType_t time = xTaskGetTickCount();
     ;
     do {
         if (!s_i2s_running) {
@@ -105,8 +107,9 @@ uint16_t* camera_getLine(uint16_t lineno)
             i2s_frameReadStart();
         }
         xSemaphoreTake(s_line_ready, portMAX_DELAY);
-        if (millis() - time > 1000)
+        if (xTaskGetTickCount() - time > 1000) { //@TODO: replace by xTaskGetTickCount?
             return NULL;
+        }
     } while (lineno != s_line_count);
 
     return (uint16_t*)s_fb[s_fb_idx];
