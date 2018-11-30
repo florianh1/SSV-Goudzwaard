@@ -1,11 +1,48 @@
-﻿#pragma once
+﻿// #pragma once
 
-#include "driver/ledc.h"
-#include "esp_err.h"
+// #include "driver/ledc.h"
+// #include "esp_err.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
+
+#include "esp_event_loop.h"
+#include "esp_log.h"
+#include "esp_system.h"
+#include "esp_wifi.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+#include "freertos/task.h"
+#include "nvs_flash.h"
+#include <string.h>
+#include <sys/param.h>
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include <lwip/netdb.h>
+
+// below from example
+
+#include "driver/gpio.h"
+#include "driver/ledc.h" // added by henri
+#include "driver/periph_ctrl.h"
+#include "esp_intr_alloc.h"
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
+#include "rom/lldesc.h"
+#include "soc/gpio_sig_map.h"
+#include "soc/i2s_reg.h"
+#include "soc/i2s_struct.h"
+#include "soc/io_mux_reg.h"
+#include "soc/soc.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     int D0; /*!< GPIO pin for camera D0 line */
@@ -32,6 +69,6 @@ esp_err_t I2S_camera_init(camera_config_t* config);
 uint16_t* camera_getLine(uint16_t lineno);
 //uint16_t* camera_getFrame(void);
 
-#ifdef __cplusplus
-}
-#endif
+// #ifdef __cplusplus
+// }
+// #endif
