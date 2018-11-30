@@ -24,6 +24,13 @@
 #define GPIO_PWM1A_OUT 25 //Set GPIO 25 as PWM0A
 #define GPIO_PWM1B_OUT 26 //Set GPIO 26 as PWM0B
 
+//settings for the motor speed
+#define MAX_SPEED 100
+#define ACCElERATION_TIMES 3
+#define ACCELERATION (MAX_SPEED / ACCElERATION_TIMES)
+#define JOYSTICK_MIDDLE_LOW 3
+#define JOYSTICK_MIDDLE_HIGH 4
+
 extern SemaphoreHandle_t xJoystickSemaphore;
 extern SemaphoreHandle_t yJoystickSemaphore;
 
@@ -91,52 +98,53 @@ void motor_task(void* arg)
     float left;
 
     while (1) {
+        ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
 
         if (yJoystickSemaphore != NULL && xJoystickSemaphore != NULL) {
             // printf("Semaforen zijn vrij!\n");
             // printf("X = %d  | Y = %d  \n", joystick_x, joystick_y);
 
             // Y in the middle
-            if (joystick_y == 3 || joystick_y == 4) {
-                if (joystick_x == 3 || joystick_x == 4) {
+            if (joystick_y >= JOYSTICK_MIDDLE_LOW && joystick_y <= JOYSTICK_MIDDLE_HIGH) {
+                if (joystick_x >= JOYSTICK_MIDDLE_LOW || joystick_x <= JOYSTICK_MIDDLE_HIGH) {
+                    //no movement
                     brushed_motor_stop(MCPWM_UNIT_0, MCPWM_TIMER_0);
                     brushed_motor_stop(MCPWM_UNIT_1, MCPWM_TIMER_1);
-                } else if (joystick_x < 3) {
-                    left = (3 - joystick_x) * 33;
+                } else if (joystick_x < JOYSTICK_MIDDLE_LOW) {
+                    //steering left
+                    left = (JOYSTICK_MIDDLE_LOW - joystick_x) * ACCELERATION;
                     brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, 0); // right motor
                     brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
-                } else if (joystick_x > 4) {
-                    right = (joystick_x - 4) * 33;
+                } else if (joystick_x > JOYSTICK_MIDDLE_HIGH) {
+                    //steering right
+                    right = (joystick_x - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
                     brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
                     brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, 0); // left motor
                 }
-            } else
-                // Y on the upper side
-                if (joystick_y < 3) {
-                right = (3 - joystick_y) * 33;
-                left = (3 - joystick_y) * 33;
-                if (joystick_x > 4) {
-                    //to the right
-                    right = (joystick_x - 3) * 33;
-                } else if (joystick_x < 3) {
-                    //to the left
-                    left = (3 - joystick_x) * 33;
+            } else if (joystick_y < JOYSTICK_MIDDLE_LOW) {
+                //steering up
+                right = (JOYSTICK_MIDDLE_LOW - joystick_y) * ACCELERATION;
+                left = (JOYSTICK_MIDDLE_LOW - joystick_y) * ACCELERATION;
+                if (joystick_x > JOYSTICK_MIDDLE_HIGH) {
+                    //steering right
+                    left = (joystick_x - JOYSTICK_MIDDLE_LOW) * ACCELERATION;
+                } else if (joystick_x < JOYSTICK_MIDDLE_LOW) {
+                    //steering left
+                    right = (JOYSTICK_MIDDLE_LOW - joystick_x) * ACCELERATION;
                 }
 
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
                 brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
-            } else
-                // Y on the under side
-                if (joystick_y > 4) {
-                //forward
-                right = (joystick_y - 4) * 33;
-                left = (joystick_y - 4) * 33;
-                if (joystick_x > 4) {
-                    //to the right
-                    right = (joystick_x - 3) * 33;
-                } else if (joystick_x < 3) {
-                    //to the left
-                    left = (3 - joystick_x) * 33;
+            } else if (joystick_y > JOYSTICK_MIDDLE_HIGH) {
+                // steering down
+                right = (joystick_y - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
+                left = (joystick_y - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
+                if (joystick_x > JOYSTICK_MIDDLE_HIGH) {
+                    //steering right
+                    right = (joystick_x - JOYSTICK_MIDDLE_LOW) * ACCELERATION;
+                } else if (joystick_x < JOYSTICK_MIDDLE_LOW) {
+                    //steering left
+                    left = (JOYSTICK_MIDDLE_LOW - joystick_x) * ACCELERATION;
                 }
 
                 brushed_motor_backward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
