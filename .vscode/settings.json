@@ -10,6 +10,7 @@
     "files.associations": {
         "freertos.h": "c",
         "freertosconfig.h": "c",
-        "wifi.h": "c"
+        "wifi.h": "c",
+        "i2scamera.h": "c"
     }
 }

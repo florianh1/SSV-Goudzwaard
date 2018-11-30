@@ -1,22 +1,6 @@
-#include "I2Scamera.h"
-#include "driver/gpio.h"
-#include "driver/periph_ctrl.h"
-#include "esp_intr_alloc.h"
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "freertos/task.h"
-#include "rom/lldesc.h"
-#include "soc/gpio_sig_map.h"
-#include "soc/i2s_reg.h"
-#include "soc/i2s_struct.h"
-#include "soc/io_mux_reg.h"
-#include "soc/soc.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <I2Scamera.h>
 
-static const char* TAG = "camera";
+static const char* TAG = "Camera";
 
 static camera_config_t s_config;
 static lldesc_t s_dma_desc[2];
