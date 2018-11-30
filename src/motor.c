@@ -71,7 +71,7 @@ void control_engines_task(void* pvParameter)
 }
 
 /**
- * controls the speed motors
+ * controls the speed of both motors
  * 
  * @ param void *
  * @ return void 
