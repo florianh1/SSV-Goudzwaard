@@ -4,8 +4,8 @@
 #include "I2Scamera.h"
 #include "esp_attr.h"
 #include "esp_log.h"
-#include <Arduino.h>
-#include <pgmspace.h>
+//#include <Arduino.h>
+//#include <pgmspace.h>
 #include <stdio.h>
 
 #define VGA 0 // 640 x 480
@@ -27,60 +27,54 @@ struct regval_list {
     uint8_t value;
 };
 
-class OV7670 {
-public:
-    OV7670(void);
-    ~OV7670(void);
+void reset(void);
+esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode);
 
-    void reset(void);
-    esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode);
+void setResolution(uint8_t res);
+void setPCLK(uint8_t pre, uint8_t pll);
+void rewrCLKRC(void);
+void setHStart(uint16_t val);
+void setVStart(uint16_t val);
+uint16_t getHStart(void);
+uint16_t getVStart(void);
 
-    void setResolution(uint8_t res);
-    void setPCLK(uint8_t pre, uint8_t pll);
-    void rewrCLKRC(void);
-    void setHStart(uint16_t val);
-    void setVStart(uint16_t val);
-    uint16_t getHStart(void);
-    uint16_t getVStart(void);
+uint16_t* getLine(uint16_t lineno);
+bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n);
+void getFrame(uint8_t* buf);
 
-    uint16_t* getLine(uint16_t lineno);
-    bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n);
-    void getFrame(uint8_t* buf);
+void stop(void);
+uint16_t getMID(void);
+uint16_t getPID(void);
+void vflip(bool enable);
+void setColor(uint8_t color);
+void setGain(uint16_t val);
+uint16_t getGain(void);
+void setAGC(uint8_t val);
+bool getAGC(void);
+void setAWB(uint8_t val);
+bool getAWB(void);
+void setAEC(uint8_t val);
+bool getAEC(void);
+void setBright(int8_t val);
+int8_t getBright(void);
+void setContrast(uint8_t val);
+uint8_t getContrast(void);
+void setAWBB(uint8_t val);
+void setAWBR(uint8_t val);
+void setAWBG(uint8_t val);
+void setExposure(uint16_t val);
+void colorbar(bool on);
+void colorbar_super(bool on);
 
-    void stop(void);
-    uint16_t getMID(void);
-    uint16_t getPID(void);
-    void vflip(bool enable);
-    void setColor(uint8_t color);
-    void setGain(uint16_t val);
-    uint16_t getGain(void);
-    void setAGC(uint8_t val);
-    bool getAGC(void);
-    void setAWB(uint8_t val);
-    bool getAWB(void);
-    void setAEC(uint8_t val);
-    bool getAEC(void);
-    void setBright(int8_t val);
-    int8_t getBright(void);
-    void setContrast(uint8_t val);
-    uint8_t getContrast(void);
-    void setAWBB(uint8_t val);
-    void setAWBR(uint8_t val);
-    void setAWBG(uint8_t val);
-    void setExposure(uint16_t val);
-    void colorbar(bool on);
-    void colorbar_super(bool on);
+void wrReg(uint8_t reg, uint8_t dat);
+uint8_t rdReg(uint8_t reg);
 
-    void wrReg(uint8_t reg, uint8_t dat);
-    uint8_t rdReg(uint8_t reg);
 
-private:
-    void wrRegs(const struct regval_list* reglist);
-    void conf_setFrameSize(uint8_t res);
-    camera_config_t cam_conf;
-    uint8_t _resolution;
-    uint8_t _colormode;
-};
+void wrRegs(const struct regval_list* reglist);
+void conf_setFrameSize(uint8_t res);
+camera_config_t cam_conf;
+uint8_t _resolution;
+uint8_t _colormode;
 
 // OV7670 Registers ---------------------------------------------
 //

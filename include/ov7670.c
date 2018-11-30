@@ -1,14 +1,16 @@
-#include "OV7670.h"
+#include <ov7670.h>
 #include "I2Scamera.h"
 #include "driver/periph_ctrl.h"
-#include "esp32-hal-ledc.h"
-#include <Arduino.h>
-#include <Wire.h>
-#include <pgmspace.h>
+//#include "esp32-hal-ledc.h" //TODO: check if needed
+//#include <Arduino.h> //TODO: rewrite Arduino lib
+#include "driver/i2c.h" //#include <Wire.h>
+//#include <pgmspace.h> //TODO: check if needed
+
+static const char* TAG = "OV7670";
 
 //--------- Screen mode -----------------------------------------------
 
-static const struct regval_list vga_OV7670[] PROGMEM = {
+static const struct regval_list vga_OV7670[] = {
     // 640 x 480
     { REG_COM3, 0 }, // No scaling
     { REG_COM14, 0 },
@@ -20,7 +22,7 @@ static const struct regval_list vga_OV7670[] PROGMEM = {
     { 0xff, 0xff } // END MARKER
 };
 
-static const struct regval_list cif_OV7670[] PROGMEM = {
+static const struct regval_list cif_OV7670[] = {
     // 352 x 288
     { REG_COM3, COM3_DCWEN }, // Enable format scaling
     { REG_COM14, COM14_DCWEN | COM14_PCLKDIV_2 }, // divide by 2
@@ -32,7 +34,7 @@ static const struct regval_list cif_OV7670[] PROGMEM = {
     { 0xff, 0xff } // END MARKER
 };
 
-static const struct regval_list qvga_OV7670[] PROGMEM = {
+static const struct regval_list qvga_OV7670[] = {
     // 320 x 240
     { REG_COM3, COM3_DCWEN }, // Enable format scaling
     { REG_COM14, COM14_DCWEN | COM14_PCLKDIV_2 }, // divide by 2
@@ -44,7 +46,7 @@ static const struct regval_list qvga_OV7670[] PROGMEM = {
     { 0xff, 0xff } // END MARKER
 };
 
-static const struct regval_list qqvga_OV7670[] PROGMEM = {
+static const struct regval_list qqvga_OV7670[] = {
     // 160 x 120
     { REG_COM3, COM3_DCWEN }, // Enable format scaling
     { REG_COM14, COM14_DCWEN | COM14_MANUAL | COM14_PCLKDIV_4 }, // divide by 4
@@ -56,7 +58,7 @@ static const struct regval_list qqvga_OV7670[] PROGMEM = {
     { 0xff, 0xff } // END MARKER
 };
 
-static const struct regval_list qcif_OV7670[] PROGMEM = {
+static const struct regval_list qcif_OV7670[] = {
     { REG_COM3, COM3_SCALEEN | COM3_DCWEN }, // Enable format scaling
     { REG_COM3, COM3_DCWEN }, // Enable Downsampling/Dropping/Windowing
     { REG_COM14, COM14_DCWEN | COM14_MANUAL | COM14_PCLKDIV_2 }, // divide by 2
@@ -68,7 +70,7 @@ static const struct regval_list qcif_OV7670[] PROGMEM = {
     { 0xff, 0xff } /* END MARKER */
 };
 
-static const struct regval_list qqcif_OV7670[] PROGMEM = {
+static const struct regval_list qqcif_OV7670[] = {
     { REG_COM3, COM3_SCALEEN | COM3_DCWEN },
     { REG_COM14, COM14_DCWEN | COM14_PCLKDIV_4 }, // divide by 4
     { REG_SCALING_XSC, 0x3a }, // Horizontal scale factor
@@ -80,7 +82,7 @@ static const struct regval_list qqcif_OV7670[] PROGMEM = {
 };
 
 //------- Color mode --------------------------------------
-static const struct regval_list yuv422_OV7670[] PROGMEM = {
+static const struct regval_list yuv422_OV7670[] = {
     { REG_RGB444, 0 }, /* No RGB444 please */
     { REG_COM1, 0 },
     { REG_COM15, COM15_R00FF },
@@ -95,7 +97,7 @@ static const struct regval_list yuv422_OV7670[] PROGMEM = {
     { 0xff, 0xff } /* END MARKER */
 };
 
-static const struct regval_list rgb565_OV7670[] PROGMEM = {
+static const struct regval_list rgb565_OV7670[] = {
     //	{REG_COM7, COM7_RGB},	// select RGB mode
     { REG_RGB444, 0 }, /* No RGB444 please */
     { REG_COM1, 0x0 },
@@ -112,7 +114,7 @@ static const struct regval_list rgb565_OV7670[] PROGMEM = {
     { 0xff, 0xff } /* END MARKER */
 };
 
-static const struct regval_list bayerRGB_OV7670[] PROGMEM = {
+static const struct regval_list bayerRGB_OV7670[] = {
     //	{REG_COM7, COM7_PBAYER},
     { REG_RGB444, R444_DISABLE },
     { REG_COM15, COM15_R00FF },
@@ -148,7 +150,7 @@ const struct regval_list OV7670_default_regs[] PROGMEM = {
   {0x79,0x05},{0xc8,0x30},{0x79,0x26},{0x09,0x03},{0x3b,0x42},{0xff,0xff},
 };
 */
-const struct regval_list OV7670_default2_regs[] PROGMEM = {
+const struct regval_list OV7670_default2_regs[] = {
     { REG_TSLB, 0x04 },
     { REG_COM15, COM15_R00FF | COM15_RGB565 },
     { REG_COM7, COM7_FMT_QVGA | COM7_RGB },
@@ -340,15 +342,7 @@ const struct regval_list OV7670_default2_regs[] PROGMEM = {
 
 //---------------------------------------------------------
 
-OV7670::OV7670(void)
-{
-}
-
-OV7670::~OV7670(void)
-{
-}
-
-void OV7670::conf_setFrameSize(uint8_t res)
+void conf_setFrameSize(uint8_t res)
 {
     switch (res) {
     case VGA:
@@ -379,21 +373,21 @@ void OV7670::conf_setFrameSize(uint8_t res)
     }
 }
 
-void OV7670::reset(void)
+void reset(void)
 {
     wrReg(REG_COM7, COM7_RESET); // All reg reset
     delay(100);
 
-    Serial.println(F("--- Default setting -----"));
+    ESP_LOGI(TAG ,"--- Default setting -----");
     wrRegs(OV7670_default2_regs); // Camera Default setting
-    Serial.println(F("--- Resolution setting -----"));
+    ESP_LOGI("--- Resolution setting -----");
     setResolution(_resolution); // 解像度設定
-    Serial.println(F("--- ColorMode setting -----"));
+    ESP_LOGI("--- ColorMode setting -----");
     setColor(_colormode); // カラーモード設定
     setPCLK(1, DBLV_CLK_x4); // PCLK 設定 : 10MHz / (pre+1) * 4 --> 20MHz
 }
 
-esp_err_t OV7670::init(const camera_config_t* value, uint8_t res, uint8_t colmode)
+esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
 {
     memcpy(&cam_conf, value, sizeof(cam_conf));
     _resolution = res;
@@ -404,7 +398,7 @@ esp_err_t OV7670::init(const camera_config_t* value, uint8_t res, uint8_t colmod
     //	delay(1000);
 
     // XCLOK 出力
-    pinMode(cam_conf.XCLK, OUTPUT);
+    pinMode(cam_conf.XCLK, OUTPUT); //FIXME: pinMode is not a valid function here
     pinMode(cam_conf.XCLK, LOW);
     ledcSetup(cam_conf.ledc_channel, cam_conf.xclk_freq_hz, 2);
     ledcAttachPin(cam_conf.XCLK, cam_conf.ledc_channel);
@@ -427,17 +421,17 @@ esp_err_t OV7670::init(const camera_config_t* value, uint8_t res, uint8_t colmod
 
     esp_err_t err = I2S_camera_init(&cam_conf); // I2S initialize
     if (err != ESP_OK) {
-        Serial.println(F(" I2S Camera init ERROR"));
+        ESP_LOGI(TAG, " I2S Camera init ERROR");
         return err;
     }
 
     reset();
 
-    Serial.println(F("---- Camera init ok! ----"));
+    ESP_LOGI(TAG, "---- Camera init ok! ----");
     return err;
 }
 
-void OV7670::setResolution(uint8_t res)
+void setResolution(uint8_t res)
 {
     uint8_t temp;
     uint16_t vstart, vstop, hstart, hstop;
@@ -498,7 +492,7 @@ void OV7670::setResolution(uint8_t res)
     setVStart(vstart);
 }
 
-void OV7670::setHStart(uint16_t hstart)
+void setHStart(uint16_t hstart)
 {
     uint16_t hstop;
     switch (_resolution) {
@@ -524,7 +518,7 @@ void OV7670::setHStart(uint16_t hstart)
     rewrCLKRC();
 }
 
-void OV7670::setVStart(uint16_t vstart)
+void setVStart(uint16_t vstart)
 {
     uint16_t vstop;
     vstop = vstart + 480;
@@ -534,32 +528,32 @@ void OV7670::setVStart(uint16_t vstart)
     rewrCLKRC();
 }
 
-uint16_t OV7670::getHStart(void)
+uint16_t getHStart(void)
 {
     uint16_t hstart;
     hstart = (uint16_t)rdReg(REG_HSTART) * 8 + (uint16_t)(rdReg(REG_HREF) & 0x07);
     return hstart;
 }
-uint16_t OV7670::getVStart(void)
+uint16_t getVStart(void)
 {
     uint16_t vstart;
     vstart = (uint16_t)rdReg(REG_VSTART) * 4 + (uint16_t)(rdReg(REG_VREF) & 0x03);
     return vstart;
 }
 
-void OV7670::stop(void)
+void stop(void)
 {
     ledcDetachPin(cam_conf.XCLK);
 }
 
-uint16_t* OV7670::getLine(uint16_t lineno)
+uint16_t* getLine(uint16_t lineno)
 {
     uint16_t* p_buf;
     p_buf = camera_getLine(lineno);
     return p_buf;
 }
 
-bool OV7670::getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
+bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 {
     uint16_t i, *p_buf;
     uint16_t wb = cam_conf.frame_width * cam_conf.pixel_byte_num;
@@ -573,12 +567,12 @@ bool OV7670::getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
     return true;
 }
 
-void OV7670::getFrame(uint8_t* buf)
+void getFrame(uint8_t* buf)
 {
     getLines(1, buf, cam_conf.frame_height);
 }
 
-void OV7670::setColor(uint8_t colormode)
+void setColor(uint8_t colormode)
 {
     uint8_t temp;
 
@@ -609,7 +603,7 @@ void OV7670::setColor(uint8_t colormode)
     rewrCLKRC(); //according to the Linux kernel driver PCLK needs rewriting
 }
 
-void OV7670::setPCLK(uint8_t pre, uint8_t pll)
+void setPCLK(uint8_t pre, uint8_t pll)
 {
     uint8_t temp;
     temp = rdReg(REG_CLKRC);
@@ -619,14 +613,14 @@ void OV7670::setPCLK(uint8_t pre, uint8_t pll)
     rewrCLKRC();
 }
 
-void OV7670::rewrCLKRC(void)
+void rewrCLKRC(void)
 {
     uint8_t temp;
     temp = rdReg(REG_CLKRC);
     wrReg(REG_CLKRC, temp); //according to the Linux kernel driver rgb565 PCLK needs rewriting
 }
 
-void OV7670::vflip(bool enable)
+void vflip(bool enable)
 {
     uint8_t temp;
     temp = rdReg(REG_MVFP) & 0b11001111;
@@ -635,21 +629,21 @@ void OV7670::vflip(bool enable)
     wrReg(REG_MVFP, temp);
 }
 
-uint16_t OV7670::getMID(void)
+uint16_t getMID(void)
 {
     uint16_t id;
     id = (uint16_t)rdReg(REG_MIDH) << 8 | (uint16_t)rdReg(REG_MIDL);
     return id;
 }
 
-uint16_t OV7670::getPID(void)
+uint16_t getPID(void)
 {
     uint16_t id;
     id = (uint16_t)rdReg(REG_PID) << 8 | (uint16_t)rdReg(REG_VER);
     return id;
 }
 
-void OV7670::setGain(uint16_t val)
+void setGain(uint16_t val)
 {
     if (val > 1023)
         val = 1023;
@@ -659,14 +653,14 @@ void OV7670::setGain(uint16_t val)
     wrReg(REG_VREF, temp | ((val / 256) << 6));
 }
 
-uint16_t OV7670::getGain(void)
+uint16_t getGain(void)
 {
     uint16_t val;
     val = (uint16_t)rdReg(REG_GAIN) + (uint16_t)((rdReg(REG_VREF) & 0x3F)) * 256;
     return val;
 }
 
-void OV7670::setAGC(uint8_t val)
+void setAGC(uint8_t val)
 {
     uint8_t temp;
     temp = rdReg(REG_COM8) & ~(COM8_FASTAEC | COM8_AGC);
@@ -674,7 +668,7 @@ void OV7670::setAGC(uint8_t val)
         temp |= COM8_FASTAEC | COM8_AGC;
     wrReg(REG_COM8, temp);
 }
-bool OV7670::getAGC(void)
+bool getAGC(void)
 {
     uint8_t temp;
     temp = rdReg(REG_COM8);
@@ -682,7 +676,7 @@ bool OV7670::getAGC(void)
         return true;
     return false;
 }
-void OV7670::setAWB(uint8_t val)
+void setAWB(uint8_t val)
 {
     uint8_t temp;
     temp = rdReg(REG_COM8) & ~COM8_AWB;
@@ -690,7 +684,7 @@ void OV7670::setAWB(uint8_t val)
         temp |= COM8_AWB;
     wrReg(REG_COM8, temp);
 }
-bool OV7670::getAWB(void)
+bool getAWB(void)
 {
     uint8_t temp;
     temp = rdReg(REG_COM8);
@@ -698,19 +692,19 @@ bool OV7670::getAWB(void)
         return true;
     return false;
 }
-void OV7670::setAWBB(uint8_t val)
+void setAWBB(uint8_t val)
 {
     wrReg(REG_BLUE, val);
 }
-void OV7670::setAWBR(uint8_t val)
+void setAWBR(uint8_t val)
 {
     wrReg(REG_RED, val);
 }
-void OV7670::setAWBG(uint8_t val)
+void setAWBG(uint8_t val)
 {
     wrReg(REG_GGAIN, val);
 }
-void OV7670::setAEC(uint8_t val)
+void setAEC(uint8_t val)
 {
     uint8_t temp;
     temp = rdReg(REG_COM8) & ~(COM8_FASTAEC | COM8_AEC);
@@ -718,7 +712,7 @@ void OV7670::setAEC(uint8_t val)
         temp |= COM8_FASTAEC | COM8_AEC;
     wrReg(REG_COM8, temp);
 }
-bool OV7670::getAEC(void)
+bool getAEC(void)
 {
     uint8_t temp;
     temp = rdReg(REG_COM8);
@@ -726,7 +720,7 @@ bool OV7670::getAEC(void)
         return true;
     return false;
 }
-void OV7670::setBright(int8_t val)
+void setBright(int8_t val)
 {
     /*	uint8_t temp;
 	temp = rdReg(REG_COM8) & ~COM8_AEC;
@@ -734,23 +728,23 @@ void OV7670::setBright(int8_t val)
 */
     wrReg(REG_BRIGHT, (uint8_t)val);
 }
-int8_t OV7670::getBright(void)
+int8_t getBright(void)
 {
     int8_t temp;
     temp = (int8_t)rdReg(REG_BRIGHT);
     return temp;
 }
-void OV7670::setContrast(uint8_t val)
+void setContrast(uint8_t val)
 {
     wrReg(REG_CONTRAS, val);
 }
-uint8_t OV7670::getContrast(void)
+uint8_t getContrast(void)
 {
     uint8_t temp;
     temp = rdReg(REG_CONTRAS);
     return temp;
 }
-void OV7670::setExposure(uint16_t val)
+void setExposure(uint16_t val)
 {
     uint8_t temp;
     temp = rdReg(REG_COM1) & 0x03;
@@ -760,7 +754,7 @@ void OV7670::setExposure(uint16_t val)
     wrReg(REG_AECHH, temp | (uint8_t)(val / 1024));
 }
 
-void OV7670::colorbar(bool on)
+void colorbar(bool on)
 {
     uint8_t temp;
     temp = rdReg(REG_COM17);
@@ -770,7 +764,7 @@ void OV7670::colorbar(bool on)
         wrReg(REG_COM17, temp & ~COM17_CBAR);
 }
 
-void OV7670::colorbar_super(bool on)
+void colorbar_super(bool on)
 {
     uint8_t temp;
     temp = rdReg(REG_COM7);
@@ -781,41 +775,67 @@ void OV7670::colorbar_super(bool on)
 }
 
 //----------------------------------------------
-void OV7670::wrReg(uint8_t reg, uint8_t dat)
+
+void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
+{
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = sda,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = scl,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = clk_speed,
+    };
+
+    ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, NULL));
+}
+
+void wrReg(uint8_t reg, uint8_t dat)
 {
     uint8_t rdat;
+    i2c_cmd_handle_t i2c_cmd_handler;
 
-    Wire.beginTransmission(OV7670_ADDR);
-    Wire.write(reg);
-    //	delay(20);
-    Wire.write(dat);
+    i2c_cmd_handler = i2c_cmd_link_create();
+
+    ESP_ERROR_CHECK(i2c_master_start(i2c_cmd_handler));
+    i2c_master_write_byte(i2c_cmd_handler, OV7670_ADDR, true);
+    i2c_master_write(i2c_cmd_handler, reg, len(reg), true);
+    // delay(20);
+    i2c_master_write(i2c_cmd_handler, dat, len(dat), true);
     //	delay(30);
-    Wire.endTransmission();
-    Serial.printf("i2c write reg:%02X data:%02X\n\r", reg, dat);
+    ESP_ERROR_CHECK(i2c_master_stop(i2c_cmd_handler));
+    ESP_LOGI(TAG, "i2c write reg:%02X data:%02X\n\r", reg, dat);
 
     //	rdat = rdReg(reg);
 }
 
-uint8_t OV7670::rdReg(uint8_t reg)
+uint8_t rdReg(uint8_t reg)
 {
     uint8_t dat;
+    i2c_cmd_handle_t i2c_cmd_handler;
 
-    Wire.beginTransmission(OV7670_ADDR);
-    Wire.write(reg);
-    //	delay(20);
-    Wire.endTransmission(true);
-    //	delay(20);
-    Wire.requestFrom(OV7670_ADDR, 1, true);
-    //	delay(20);
-    dat = Wire.read();
-    //	Wire.endTransmission();
+    i2c_cmd_handler = i2c_cmd_link_create();
 
-    Serial.printf("i2c read reg:%02X data:%02X\n\r", reg, dat);
+    ESP_ERROR_CHECK(i2c_master_start(i2c_cmd_handler));
+    i2c_master_write_byte(i2c_cmd_handler, OV7670_ADDR, true);
+    i2c_master_write(i2c_cmd_handler, reg, len(reg), true);
+    //	delay(20);
+    ESP_ERROR_CHECK(i2c_master_stop(i2c_cmd_handler));
+    //	delay(20);
+    ESP_ERROR_CHECK(i2c_master_start(i2c_cmd_handler));
+    i2c_master_write_byte(i2c_cmd_handler, OV7670_ADDR, true);
+    //i2c_master_read_byte(i2c_cmd_handler, 1, true); //Wire.requestFrom(OV7670_ADDR, 1, true); //TODO: check if this is correct
+    //	delay(20);
+    i2c_master_read(i2c_cmd_handler, dat, len(dat), true);
+    ESP_ERROR_CHECK(i2c_master_stop(i2c_cmd_handler));
+
+    ESP_LOGI(TAG, "i2c read reg:%02X data:%02X\n\r", reg, dat);
 
     return dat;
 }
 
-void OV7670::wrRegs(const struct regval_list* reglist)
+void wrRegs(const struct regval_list* reglist)
 {
     const struct regval_list* next = reglist;
     uint8_t val;
