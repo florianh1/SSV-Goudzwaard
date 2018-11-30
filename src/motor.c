@@ -113,13 +113,15 @@ void motor_task(void* arg)
                 } else if (joystick_x < JOYSTICK_MIDDLE_LOW) {
                     //steering left
                     left = (JOYSTICK_MIDDLE_LOW - joystick_x) * ACCELERATION;
-                    brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, 0); // right motor
+                    right = 0;
+                    brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
                     brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
                 } else if (joystick_x > JOYSTICK_MIDDLE_HIGH) {
                     //steering right
                     right = (joystick_x - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
+                    left = 0;
                     brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
-                    brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, 0); // left motor
+                    brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
                 }
             } else if (joystick_y < JOYSTICK_MIDDLE_LOW) {
                 //steering up
@@ -150,7 +152,10 @@ void motor_task(void* arg)
                 brushed_motor_backward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
                 brushed_motor_backward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
             }
+
+            printf("left = %d  | right = %d  \n", left, right);
         }
+
         vTaskDelay(100 / portTICK_RATE_MS);
     }
 }
