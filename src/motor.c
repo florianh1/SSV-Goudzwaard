@@ -38,6 +38,39 @@ extern uint8_t joystick_y;
 extern uint8_t joystick_x;
 
 /**
+ * Control engines task
+ * 
+ * This task is responsible for controlling the engines. This task determines which way the submarine will move and how fast.
+ * 
+ * //TODO: move to motor.c
+ *
+ * @return void
+ */
+void control_engines_task(void* pvParameter)
+{
+    static const char* TASK_TAG = "control_engines_task";
+    ESP_LOGI(TASK_TAG, "task started");
+
+    while (1) {
+        if (xJoystickSemaphore != NULL) {
+            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE) {
+                ESP_LOGI(TASK_TAG, "joystick_x: %d", joystick_x);
+                xSemaphoreGive(xJoystickSemaphore);
+            }
+        }
+
+        if (yJoystickSemaphore != NULL) {
+            if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE) {
+                ESP_LOGI(TASK_TAG, "joystick_y: %d", joystick_y);
+                xSemaphoreGive(yJoystickSemaphore);
+            }
+        }
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+/**
  * controls the speed motors
  * 
  * @ param void *
@@ -60,7 +93,7 @@ void motor_task(void* arg)
     pwm_config.counter_mode = MCPWM_UP_COUNTER;
     pwm_config.duty_mode = MCPWM_DUTY_MODE_0;
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config); //Configure PWM0A & PWM0B with above settings
-    mcpwm_init(MCPWM_UNIT_1, MCPWM_TIMER_1, &pwm_config); //Configure PWM0A & PWM0B with above settings
+    mcpwm_init(MCPWM_UNIT_1, MCPWM_TIMER_1, &pwm_config);
     float right;
     float left;
 
