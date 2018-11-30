@@ -10,7 +10,7 @@
 #define ESP_WIFI_CHANNEL 0
 
 /* Amount of Access Point connections, note a maximum amount of 4 */
-#define AP_MAX_CONNECTIONS 4
+#define AP_MAX_CONNECTIONS 1
 
 const int CLIENT_CONNECTED_BIT = BIT0;
 const int CLIENT_DISCONNECTED_BIT = BIT1;
