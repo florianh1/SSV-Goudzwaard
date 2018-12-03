@@ -16,15 +16,15 @@
 //#define CAM_HEIGHT  240     // カメラ高さ
 //#define CAM_DIV       3     // １画面分割数
 
-#define CAM_RES QCIF // カメラ解像度
-#define CAM_WIDTH 176 // カメラ幅
-#define CAM_HEIGHT 144 // カメラ高さ
-#define CAM_DIV 1 // １画面分割数
+// #define CAM_RES QCIF // カメラ解像度
+// #define CAM_WIDTH 176 // カメラ幅
+// #define CAM_HEIGHT 144 // カメラ高さ
+// #define CAM_DIV 1 // １画面分割数
 
-//#define CAM_RES     QQVGA   // カメラ解像度
-//#define CAM_WIDTH   160     // カメラ幅
-//#define CAM_HEIGHT  120     // カメラ高さ
-//#define CAM_DIV       1     // １画面分割数
+#define CAM_RES QQVGA // カメラ解像度
+#define CAM_WIDTH 160 // カメラ幅
+#define CAM_HEIGHT 120 // カメラ高さ
+#define CAM_DIV 1 // １画面分割数
 
 //******************************************
 
@@ -108,15 +108,16 @@ void WS_sendImg(uint16_t lineNo)
     pData = WScamData;
     while (len) {
         send_size = (len > UNIT_SIZE) ? UNIT_SIZE : len;
-        char tmp[1500];
+        char tmp[send_size];
         memcpy(tmp, pData, send_size);
         //WSclient.write(pData, send_size); // websocketデータ送信 ( UNITサイズ以下に区切って送る )
 
-        for (size_t i = 0; i < 1500; i++) {
-            printf("%x, ", tmp[i]);
+        for (size_t i = 0; i < send_size; i++) {
+            printf("%x", tmp[i]);
+            // printf("\n");
         }
 
-        printf("\n");
+        printf("\n\n\n");
 
         len -= send_size;
         pData += send_size;
@@ -156,33 +157,11 @@ void camera_task(void* pvParameter)
     b_awb = getAWB();
     b_aec = getAEC();
 
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-    char tx_buffer[20];
-    char addr_str[128];
-    int addr_family;
-    int ip_protocol;
-
     while (1) {
         uint16_t y, dy;
 
         dy = CAM_HEIGHT / CAM_DIV; // １度に送るライン数
         setImgHeader(CAM_WIDTH, dy); // Websocket用ヘッダを用意
-
-        struct sockaddr_in destAddr;
-        destAddr.sin_addr.s_addr = inet_addr("192.168.1.2"); //TODO: set correct address addres is most of time 192.168.1.2
-        destAddr.sin_family = AF_INET;
-        destAddr.sin_port = htons(3000);
-        addr_family = AF_INET;
-        ip_protocol = IPPROTO_IP;
-        inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
-
-        int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
-        if (sock < 0) {
-            ESP_LOGE(TASK_TAG, "Unable to create socket: errno %d", errno);
-            break;
-        }
-        ESP_LOGI(TASK_TAG, "Socket created");
 
         while (1) {
             for (y = 0; y < CAM_HEIGHT; y += dy) {
@@ -196,39 +175,39 @@ void camera_task(void* pvParameter)
 
                 len = data_size + 4;
                 pData = WScamData;
+
+                int q = 0;
+
                 while (len) {
                     send_size = (len > UNIT_SIZE) ? UNIT_SIZE : len;
 
+                    char tmp[send_size];
+                    memcpy(tmp, pData, send_size);
                     //WSclient.write(pData, send_size); // websocketデータ送信 ( UNITサイズ以下に区切って送る )
 
-                    int err = sendto(sock, &pData, send_size, 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
-                    if (err < 0) {
-                        ESP_LOGE(TASK_TAG, "Error occured during sending frame percentage: errno %d", errno);
-                        break;
+                    for (size_t i = 0; i < send_size; i = i + 4) {
+                        printf("%.2x%.2x ", tmp[i], tmp[i + 1]);
+                        vTaskDelay(10 / portTICK_PERIOD_MS);
+
+                        q++;
+                        if (q >= 8) {
+                            q = 0;
+                            printf("\n");
+                        }
+
+                        // printf("\n");
                     }
+
+                    // printf("\n\n\n");
 
                     len -= send_size;
                     pData += send_size;
                 }
-
-                // if (WS_on) {
-                //     if (WSclient) {
-                // WS_sendImg(y); // Websocket 画像送信
-                //         WS_cmdCheck(); // clientからのコマンドのやり取り
-                //     } else {
-                //         WSclient.stop(); // 接続が切れたら、ブラウザとコネクション切断する。
-                //         WS_on = false;
-                //         Serial.println("Client Stop--------------------");
-                //     }
-                // }
             }
-            // if (!WS_on) {
-            //     Ini_HTTP_Response();
-            // }
 
-            vTaskDelay(1000000 / portTICK_PERIOD_MS);
+            vTaskDelay(10000000 / portTICK_PERIOD_MS);
         }
         free(WScamData);
-        vTaskDelete(NULL);
+        vTaskDelay(1000000 / portTICK_PERIOD_MS);
     }
 }

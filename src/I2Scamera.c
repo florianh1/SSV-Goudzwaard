@@ -100,7 +100,7 @@ uint16_t* camera_getLine(uint16_t lineno)
 
     // unsigned long time = millis(); //@TODO: replace by xTaskGetTickCount?
     TickType_t time = xTaskGetTickCount();
-    ;
+
     do {
         if (!s_i2s_running) {
             vsync_check = true;
