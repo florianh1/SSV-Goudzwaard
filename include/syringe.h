@@ -24,5 +24,6 @@
   Function prototypes
 ******************************************************************************/
 void control_syringe_task(void* pvParameter);
+void emptyTank();
 
 #endif // _SYRINGE_H_

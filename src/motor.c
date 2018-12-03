@@ -38,39 +38,6 @@ extern uint8_t joystick_y;
 extern uint8_t joystick_x;
 
 /**
- * Control engines task
- * 
- * This task is responsible for controlling the engines. This task determines which way the submarine will move and how fast.
- * 
- * //TODO: move to motor.c
- *
- * @return void
- */
-void control_engines_task(void* pvParameter)
-{
-    static const char* TASK_TAG = "control_engines_task";
-    ESP_LOGI(TASK_TAG, "task started");
-
-    while (1) {
-        if (xJoystickSemaphore != NULL) {
-            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE) {
-                ESP_LOGI(TASK_TAG, "joystick_x: %d", joystick_x);
-                xSemaphoreGive(xJoystickSemaphore);
-            }
-        }
-
-        if (yJoystickSemaphore != NULL) {
-            if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE) {
-                ESP_LOGI(TASK_TAG, "joystick_y: %d", joystick_y);
-                xSemaphoreGive(yJoystickSemaphore);
-            }
-        }
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-}
-
-/**
  * controls the speed of both motors
  * 
  * @ param void *
@@ -78,7 +45,7 @@ void control_engines_task(void* pvParameter)
  */
 void motor_task(void* arg)
 {
-    static const char* TASK_TAG = "control_engines_task";
+    static const char* TASK_TAG = "motor_task";
 
     //1. mcpwm gpio initialization
     ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
@@ -98,7 +65,7 @@ void motor_task(void* arg)
     float left = 0;
 
     while (1) {
-        ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
+        // ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
 
         if (yJoystickSemaphore != NULL && xJoystickSemaphore != NULL) {
             // printf("Semaforen zijn vrij!\n");
@@ -154,7 +121,7 @@ void motor_task(void* arg)
             //     brushed_motor_stop(MCPWM_UNIT_0, MCPWM_TIMER_0);
             //     brushed_motor_stop(MCPWM_UNIT_1, MCPWM_TIMER_1);
             // }
-            ESP_LOGE(TASK_TAG, "MOTOR: RIGHT = %f || LEFT = %f \n", right, left);
+            // ESP_LOGE(TASK_TAG, "MOTOR: RIGHT = %f || LEFT = %f \n", right, left);
         }
 
         vTaskDelay(100 / portTICK_RATE_MS);
@@ -169,7 +136,6 @@ void motor_task(void* arg)
  */
 void MCPWMinit()
 {
-    printf("initializing mcpwm gpio...\n");
     //right motor
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, GPIO_PWM0A_OUT);
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, GPIO_PWM0B_OUT);

@@ -10,6 +10,16 @@
     "files.associations": {
         "freertos.h": "c",
         "freertosconfig.h": "c",
-        "wifi.h": "c"
+        "wifi.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c",
+        "sys.h": "c",
+        "err.h": "c",
+        "sockets.h": "c",
+        "netdb.h": "c",
+        "esp_event_loop.h": "c",
+        "esp_wifi.h": "c",
+        "esp_system.h": "c"
     }
 }
