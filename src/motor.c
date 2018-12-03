@@ -80,6 +80,8 @@ void motor_task(void* arg)
 {
     static const char* TASK_TAG = "control_engines_task";
 
+    esp_log_level_set(TASK_TAG, ESP_LOG_VERBOSE);
+
     //1. mcpwm gpio initialization
     ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
     MCPWMinit();
@@ -98,63 +100,45 @@ void motor_task(void* arg)
     float left = 0;
 
     while (1) {
-        ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
+        // ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
 
         if (yJoystickSemaphore != NULL && xJoystickSemaphore != NULL) {
-            // printf("Semaforen zijn vrij!\n");
-            // printf("X = %d  | Y = %d  \n", joystick_x, joystick_y);
 
-            // Y in the middle
-            if (joystick_y >= JOYSTICK_MIDDLE_LOW && joystick_y <= JOYSTICK_MIDDLE_HIGH) {
-                if (joystick_x >= JOYSTICK_MIDDLE_LOW && joystick_x <= JOYSTICK_MIDDLE_HIGH) {
-                    //no movement
-                    brushed_motor_stop(MCPWM_UNIT_0, MCPWM_TIMER_0);
-                    brushed_motor_stop(MCPWM_UNIT_1, MCPWM_TIMER_1);
-                } else if (joystick_x > JOYSTICK_MIDDLE_HIGH) {
-                    //steering right
-                    left = (joystick_x - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
-                    brushed_motor_stop(MCPWM_UNIT_0, MCPWM_TIMER_0); // right motor
-                    brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
-                } else if (joystick_x < JOYSTICK_MIDDLE_LOW) {
-                    //steering left
-                    right = (JOYSTICK_MIDDLE_LOW - joystick_x) * ACCELERATION;
-                    brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
-                    brushed_motor_stop(MCPWM_UNIT_1, MCPWM_TIMER_1); // left motor
-                }
+            bool ahead = (joystick_y < 3);
+            bool rightSide = (joystick_x > 4);
+
+            int8_t xValue = (joystick_x <= 3) ? abs(joystick_x - 3) : abs(joystick_x - 4);
+            int8_t yValue = (joystick_y <= 3) ? abs(joystick_y - 3) : abs(joystick_y - 4);
+
+            if (yValue == 0 && xValue == 0) { // Middle
+                right = 0;
+                left = 0;
+            } else if (xValue == 0) { // Y in the middle
+                right = yValue * 33;
+                left = yValue * 33;
+            } else if (yValue == 0) { // X in the middle
+                right = (rightSide) ? 0 : (xValue * 33);
+                left = (!rightSide) ? 0 : (xValue * 33);
             }
-            // else if (joystick_y < JOYSTICK_MIDDLE_LOW) {
-            //     //steering up
-            //     right = (JOYSTICK_MIDDLE_LOW - joystick_y) * ACCELERATION;
-            //     left = (JOYSTICK_MIDDLE_LOW - joystick_y) * ACCELERATION;
-            //     if (joystick_x > JOYSTICK_MIDDLE_HIGH) {
-            //         //steering right
-            //         right = (joystick_x - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
-            //     } else if (joystick_x < JOYSTICK_MIDDLE_LOW) {
-            //         //steering left
-            //         left = (JOYSTICK_MIDDLE_LOW - joystick_x) * ACCELERATION;
-            //     }
 
-            //     brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
-            //     brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
-            // } else if (joystick_y > JOYSTICK_MIDDLE_HIGH) {
-            //     // steering down
-            //     right = (joystick_y - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
-            //     left = (joystick_y - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
-            //     if (joystick_x > JOYSTICK_MIDDLE_HIGH) {
-            //         //steering right
-            //         right = (joystick_x - JOYSTICK_MIDDLE_HIGH) * ACCELERATION;
-            //     } else if (joystick_x < JOYSTICK_MIDDLE_LOW) {
-            //         //steering left
-            //         left = (JOYSTICK_MIDDLE_LOW - joystick_x - ) * ACCELERATION;
-            //     }
+            /*
+            else {
+                int distanceFromMiddle = sqrt((xValue * xValue) + (yValue * yValue));
 
-            //     brushed_motor_backward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
-            //     brushed_motor_backward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
-            // } else {
-            //     brushed_motor_stop(MCPWM_UNIT_0, MCPWM_TIMER_0);
-            //     brushed_motor_stop(MCPWM_UNIT_1, MCPWM_TIMER_1);
-            // }
-            ESP_LOGE(TASK_TAG, "MOTOR: RIGHT = %f || LEFT = %f \n", right, left);
+                right = (rightSide) ? 0 : (distanceFromMiddle * 33);
+                left = (!rightSide) ? 0 : (distanceFromMiddle * 33);
+            }
+            */
+
+            ESP_LOGE(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
+
+            if (ahead) {
+                brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
+                brushed_motor_forward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
+            } else {
+                brushed_motor_backward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
+                brushed_motor_backward(MCPWM_UNIT_1, MCPWM_TIMER_1, left); // left motor
+            }
         }
 
         vTaskDelay(100 / portTICK_RATE_MS);
