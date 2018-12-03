@@ -12,6 +12,8 @@
         "freertosconfig.h": "c",
         "wifi.h": "c",
         "i2scamera.h": "c",
-        "ledc.h": "c"
+        "ledc.h": "c",
+        "ov7670.h": "c",
+        "camera.h": "c"
     }
 }

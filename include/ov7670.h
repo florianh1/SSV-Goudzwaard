@@ -1,12 +1,22 @@
-#ifndef ov7670_h_
-#define ov7670_h_
+/******************************************************************************
+ * File           : ov7670.h
+******************************************************************************/
 
-#include "I2Scamera.h"
+#ifndef _OV7670_H_
+#define _OV7670_H_
+
 #include "esp_attr.h"
 #include "esp_log.h"
+#include <I2Scamera.h>
 //#include <Arduino.h>
 //#include <pgmspace.h>
 #include <stdio.h>
+
+#include "driver/ledc.h" //#include "esp32-hal-ledc.h" //TODO: check if needed
+#include "driver/periph_ctrl.h"
+//#include <Arduino.h> //TODO: rewrite Arduino lib
+#include "driver/i2c.h" //#include <Wire.h>
+//#include <pgmspace.h> //TODO: check if needed
 
 #define VGA 0 // 640 x 480
 #define QVGA 1 // 320 X 240
@@ -66,9 +76,10 @@ void setExposure(uint16_t val);
 void colorbar(bool on);
 void colorbar_super(bool on);
 
+void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed);
+
 void wrReg(uint8_t reg, uint8_t dat);
 uint8_t rdReg(uint8_t reg);
-
 
 void wrRegs(const struct regval_list* reglist);
 void conf_setFrameSize(uint8_t res);
@@ -401,4 +412,9 @@ uint8_t _colormode;
 #define REG_AD_CHGr 0xc1 // Gr Channel Black Level Compensation
 #define REG_SATCTR 0xc9 // Saturation Control
 
-#endif
+/******************************************************************************
+  Function prototypes
+******************************************************************************/
+esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode);
+
+#endif // _OV7670_H_

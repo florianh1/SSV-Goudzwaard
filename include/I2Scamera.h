@@ -1,4 +1,10 @@
-﻿// #pragma once
+﻿/******************************************************************************
+ * File           : I2Scamera.h
+******************************************************************************/
+#ifndef _I2SCAMERA_H_
+#define _I2SCAMERA_H_
+
+// #pragma once
 
 // #include "driver/ledc.h"
 // #include "esp_err.h"
@@ -71,4 +77,4 @@ uint16_t* camera_getLine(uint16_t lineno);
 
 // #ifdef __cplusplus
 // }
-// #endif
+#endif //_I2SCAMERA_H_
