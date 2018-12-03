@@ -5,7 +5,9 @@
 #define _CAMERA_H_
 
 #include <I2Scamera.h>
+#include <bitmap.h>
 #include <camera.h>
+#include <http_server.h>
 #include <ov7670.h>
 
 #include "esp_event_loop.h"
@@ -30,5 +32,7 @@
   Function prototypes
 ******************************************************************************/
 void camera_task(void* pvParameter);
+static void handle_rgb_bmp(http_context_t http_ctx, void* ctx);
+static void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx);
 
-#endif // _CAMERA_H_
+#endif // _CAMERA_H_gt
