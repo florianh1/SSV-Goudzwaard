@@ -41,5 +41,9 @@ typedef struct {
     bitmapinfoheader bitmapinfoheader;
 } bitmap_header_t;
 
+/******************************************************************************
+  Function prototypes
+******************************************************************************/
 bitmap_header_t* bmp_create_header(int w, int h);
+
 #endif //_BITMAP_H_
