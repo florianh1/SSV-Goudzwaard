@@ -1,7 +1,7 @@
 #include <wifi.h>
 
 /* Wi-Fi SSID, note a maximum character length of 32 */
-#define ESP_WIFI_SSID "ARNO"
+#define ESP_WIFI_SSID "SSV Goudzwaard"
 
 /* Wi-Fi password, note a minimal length of 8 and a maximum length of 64 characters */
 #define ESP_WIFI_PASS "12345678"
