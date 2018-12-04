@@ -17,12 +17,12 @@
   pin definitions of the pwm pins
 ******************************************************************************/
 //motor right
-#define GPIO_PWM0A_OUT 15 //Set GPIO 15 as PWM0A
-#define GPIO_PWM0B_OUT 16 //Set GPIO 16 as PWM0B
+#define GPIO_PWM0A_OUT 1 //Set GPIO 15 as PWM0A
+#define GPIO_PWM0B_OUT 3 //Set GPIO 16 as PWM0B
 
 //motor motor left
-#define GPIO_PWM1A_OUT 25 //Set GPIO 25 as PWM0A
-#define GPIO_PWM1B_OUT 26 //Set GPIO 26 as PWM0B
+#define GPIO_PWM1A_OUT 5 //Set GPIO 25 as PWM0A
+#define GPIO_PWM1B_OUT 23 //Set GPIO 26 as PWM0B
 
 //settings for the motor speed
 #define MAX_SPEED 100

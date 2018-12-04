@@ -9,10 +9,10 @@ extern SemaphoreHandle_t scrollbarSemaphore;
 
 extern uint8_t scrollbar;
 
-#define IN1 22
-#define IN2 23
-#define IN3 25
-#define IN4 26
+#define IN1 16
+#define IN2 17
+#define IN3 18
+#define IN4 19
 #define GPIO_ON 1
 #define GPIO_OFF 0
 #define STEPPER_PINS ((1ULL << IN1) | (1ULL << IN2) | (1ULL << IN3) | (1ULL << IN4))
@@ -96,6 +96,11 @@ void pullML()
     }
 }
 
+void syringeStop()
+{
+    pinSet(GPIO_OFF, GPIO_OFF, GPIO_OFF, GPIO_OFF);
+}
+
 void emptyTank()
 {
     static const char* TASK_TAG = "emtpyTank";
@@ -133,6 +138,7 @@ void control_syringe_task(void* pvParameter)
             waterML++;
         } else {
             vTaskDelay(500 / portTICK_PERIOD_MS);
+            syringeStop();
         }
         ESP_LOGI(TASK_TAG, "scrollbar = %d || waterML = %d", scrollbar, waterML);
     }
