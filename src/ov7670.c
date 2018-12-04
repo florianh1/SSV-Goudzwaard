@@ -118,32 +118,7 @@ static const struct regval_list bayerRGB_OV7670[] = {
     { REG_REG76, 0xe1 }, /* Pix correction, magic rsvd */
     { 0xff, 0xff } /* END MARKER */
 };
-//-------------------------------------------------------------
-/*
-const struct regval_list OV7670_default_regs[] PROGMEM = {
-  {0x3a,0x04},{0x40,0xd0},{0x12,0x14},{0x32,0x80},{0x17,0x16},{0x18,0x04},{0x19,0x02},{0x1a,0x7b},
-  {0x03,0x06},{0x0c,0x04},{0x3e,0x19},{0x70,0x3a},{0x71,0x35},{0x72,0x11},{0x73,0xf1},{0xa2,0x02},
-  {0x11,0x81},{0x7a,0x20},{0x7b,0x1c},{0x7c,0x28},{0x7d,0x3c},{0x7e,0x55},{0x7f,0x68},{0x80,0x76},
-  {0x81,0x80},{0x82,0x88},{0x83,0x8f},{0x84,0x96},{0x85,0xa3},{0x86,0xaf},{0x87,0xc4},{0x88,0xd7},
-  {0x89,0xe8},{0x13,0xe0},{0x00,0x00},{0x10,0x00},{0x0d,0x00},{0x14,0x28},{0xa5,0x05},{0xab,0x07},
-  {0x24,0x75},{0x25,0x63},{0x26,0xA5},{0x9f,0x78},{0xa0,0x68},{0xa1,0x03},{0xa6,0xdf},{0xa7,0xdf},
-  {0xa8,0xf0},{0xa9,0x90},{0xaa,0x94},{0x13,0xe5},{0x0e,0x61},{0x0f,0x4b},{0x16,0x02},{0x1e,0x37}, //{0x1e,0x17}
-  {0x21,0x02},{0x22,0x91},{0x29,0x07},{0x33,0x0b},{0x35,0x0b},{0x37,0x1d},{0x38,0x71},{0x39,0x2a},
-  {0x3c,0x78},{0x4d,0x40},{0x4e,0x20},{0x69,0x00},{0x6b,0x00},{0x74,0x19},{0x8d,0x4f},{0x8e,0x00},
-  {0x8f,0x00},{0x90,0x00},{0x91,0x00},{0x92,0x00},{0x96,0x00},{0x9a,0x80},{0xb0,0x84},{0xb1,0x0c},
-  {0xb2,0x0e},{0xb3,0x82},{0xb8,0x0a},{0x43,0x14},{0x44,0xf0},{0x45,0x34},{0x46,0x58},{0x47,0x28},
-  {0x48,0x3a},{0x59,0x88},{0x5a,0x88},{0x5b,0x44},{0x5c,0x67},{0x5d,0x49},{0x5e,0x0e},{0x64,0x04},
-  {0x65,0x20},{0x66,0x05},{0x94,0x04},{0x95,0x08},{0x6c,0x0a},{0x6d,0x55},{0x6e,0x11},{0x6f,0x9f},
-  {0x6a,0x40},{0x01,0x40},{0x02,0x40},{0x13,0x8f},{0x15,0x22},{0x4f,0x80},{0x50,0x80},{0x51,0x00},
-  {0x52,0x22},{0x53,0x5e},{0x54,0x80},{0x58,0x9e},{0x41,0x08},{0x3f,0x00},{0x75,0x05},{0x76,0xe1},
-  {0x4c,0x00},{0x77,0x01},{0x3d,0xc2},{0x4b,0x09},{0xc9,0x60},{0x41,0x38},{0x56,0x40},{0x34,0x11},
-  {0x3b,0x02},{0xa4,0x89},{0x96,0x00},{0x97,0x30},{0x98,0x20},{0x99,0x30},{0x9a,0x84},{0x9b,0x29},
-  {0x9c,0x03},{0x9d,0x4c},{0x9e,0x3f},{0x78,0x04},{0x79,0x01},{0xc8,0xf0},{0x79,0x0f},{0xc8,0x00},
-  {0x79,0x10},{0xc8,0x7e},{0x79,0x0a},{0xc8,0x80},{0x79,0x0b},{0xc8,0x01},{0x79,0x0c},{0xc8,0x0f},
-  {0x79,0x0d},{0xc8,0x20},{0x79,0x09},{0xc8,0x80},{0x79,0x02},{0xc8,0xc0},{0x79,0x03},{0xc8,0x40},
-  {0x79,0x05},{0xc8,0x30},{0x79,0x26},{0x09,0x03},{0x3b,0x42},{0xff,0xff},
-};
-*/
+
 const struct regval_list OV7670_default2_regs[] = {
     { REG_TSLB, 0x04 },
     { REG_COM15, COM15_R00FF | COM15_RGB565 },
@@ -370,33 +345,23 @@ void conf_setFrameSize(uint8_t res)
 void reset(void)
 {
     wrReg(REG_COM7, COM7_RESET); // All reg reset
-    // delay(100); //FIXME: delay
 
     ESP_LOGI(TAG, "--- Default setting -----");
     wrRegs(OV7670_default2_regs); // Camera Default setting
     ESP_LOGI(TAG, "--- Resolution setting -----");
-    setResolution(_resolution); // 解像度設定
+    setResolution(_resolution); // Resolution setting
     ESP_LOGI(TAG, "--- ColorMode setting -----");
-    setColor(_colormode); // カラーモード設定
-    setPCLK(1, DBLV_CLK_x4); // PCLK 設定 : 10MHz / (pre+1) * 4 --> 20MHz
+    setColor(_colormode); // Color mode setting
+    setPCLK(1, DBLV_CLK_x4); // PCLK setting : 10MHz / (pre+1) * 4 --> 20MHz
 }
 
 esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
 {
+    esp_err_t err;
     memcpy(&cam_conf, value, sizeof(cam_conf));
-
-    //ESP_LOGI(TAG, "cam")
 
     _resolution = res;
     _colormode = colmode;
-
-    //	Wire.begin();
-    //	Wire.setClock(400000);
-    //	delay(1000);
-
-    // XCLOK 出力
-    //pinMode(cam_conf.XCLK, OUTPUT); //FIXME: pinMode is not a valid function here
-    //pinMode(cam_conf.XCLK, LOW);
 
     gpio_pad_select_gpio(cam_conf.XCLK);
     /* Set the GPIO as a push/pull output */
@@ -404,19 +369,13 @@ esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
 
     gpio_set_level(cam_conf.XCLK, 0);
 
-    // ledcSetup(cam_conf.ledc_channel, cam_conf.xclk_freq_hz, 2);
-    // ledcAttachPin(cam_conf.XCLK, cam_conf.ledc_channel);
-    // ledcWrite(cam_conf.ledc_channel, 2);
-
     periph_module_enable(PERIPH_LEDC_MODULE);
 
-    // below COPIED from esp cam hacking
     ledc_timer_config_t timer_conf;
-    timer_conf.bit_num = 1;
     timer_conf.freq_hz = cam_conf.xclk_freq_hz;
     timer_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
     timer_conf.timer_num = cam_conf.ledc_timer;
-    esp_err_t err = ledc_timer_config(&timer_conf);
+    err = ledc_timer_config(&timer_conf);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "ledc_timer_config failed, rc=%x", err);
         return err;
@@ -439,12 +398,11 @@ esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
         return err;
     }
 
-    // above COPIED from esp cam hacking
-
     conf_setFrameSize(res);
 
     switch (colmode) {
     case YUV422:
+        break;
     case RGB565:
         cam_conf.pixel_byte_num = 2;
         break;
@@ -452,15 +410,14 @@ esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
         cam_conf.pixel_byte_num = 1;
         break;
     case PBAYER_RAW:
-        cam_conf.pixel_byte_num = 1; // ???
+        cam_conf.pixel_byte_num = 1;
         break;
     }
 
     i2c_init(21, 22, 10000);
 
-    esp_err_t err1 = I2S_camera_init(&cam_conf); // I2S initialize //FIXME:
-
-    if (err1 != ESP_OK) {
+    err = I2S_camera_init(&cam_conf);
+    if (err != ESP_OK) {
         ESP_LOGI(TAG, " I2S Camera init ERROR");
         return err;
     }
@@ -474,7 +431,7 @@ esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
 void setResolution(uint8_t res)
 {
     uint8_t temp;
-    uint16_t vstart = 0, vstop, hstart = 0, hstop;
+    uint16_t vstart = 0, hstart = 0;
     uint8_t pclkdiv = 0;
 
     conf_setFrameSize(res);
@@ -538,8 +495,6 @@ void setHStart(uint16_t hstart)
     uint16_t hstop = 0;
     switch (_resolution) {
     case VGA:
-        // hstop = 0;
-        // break;
     case QVGA:
     case QQVGA:
         hstop = 640;
@@ -577,16 +532,12 @@ uint16_t getHStart(void)
     hstart = (uint16_t)rdReg(REG_HSTART) * 8 + (uint16_t)(rdReg(REG_HREF) & 0x07);
     return hstart;
 }
+
 uint16_t getVStart(void)
 {
     uint16_t vstart;
     vstart = (uint16_t)rdReg(REG_VSTART) * 4 + (uint16_t)(rdReg(REG_VREF) & 0x03);
     return vstart;
-}
-
-void stop(void)
-{
-    //ledcDetachPin(cam_conf.XCLK); //FIXME:
 }
 
 uint16_t* getLine(uint16_t lineno)
@@ -674,16 +625,12 @@ void vflip(bool enable)
 
 uint16_t getMID(void)
 {
-    uint16_t id;
-    id = (uint16_t)rdReg(REG_MIDH) << 8 | (uint16_t)rdReg(REG_MIDL);
-    return id;
+    return ((uint16_t)rdReg(REG_MIDH) << 8 | (uint16_t)rdReg(REG_MIDL));
 }
 
 uint16_t getPID(void)
 {
-    uint16_t id;
-    id = (uint16_t)rdReg(REG_PID) << 8 | (uint16_t)rdReg(REG_VER);
-    return id;
+    return ((uint16_t)rdReg(REG_PID) << 8 | (uint16_t)rdReg(REG_VER));
 }
 
 void setGain(uint16_t val)
@@ -698,9 +645,7 @@ void setGain(uint16_t val)
 
 uint16_t getGain(void)
 {
-    uint16_t val;
-    val = (uint16_t)rdReg(REG_GAIN) + (uint16_t)((rdReg(REG_VREF) & 0x3F)) * 256;
-    return val;
+    return ((uint16_t)rdReg(REG_GAIN) + (uint16_t)((rdReg(REG_VREF) & 0x3F)) * 256);
 }
 
 void setAGC(uint8_t val)
@@ -711,6 +656,7 @@ void setAGC(uint8_t val)
         temp |= COM8_FASTAEC | COM8_AGC;
     wrReg(REG_COM8, temp);
 }
+
 bool getAGC(void)
 {
     uint8_t temp;
@@ -719,6 +665,7 @@ bool getAGC(void)
         return true;
     return false;
 }
+
 void setAWB(uint8_t val)
 {
     uint8_t temp;
@@ -727,6 +674,7 @@ void setAWB(uint8_t val)
         temp |= COM8_AWB;
     wrReg(REG_COM8, temp);
 }
+
 bool getAWB(void)
 {
     uint8_t temp;
@@ -735,18 +683,22 @@ bool getAWB(void)
         return true;
     return false;
 }
+
 void setAWBB(uint8_t val)
 {
     wrReg(REG_BLUE, val);
 }
+
 void setAWBR(uint8_t val)
 {
     wrReg(REG_RED, val);
 }
+
 void setAWBG(uint8_t val)
 {
     wrReg(REG_GGAIN, val);
 }
+
 void setAEC(uint8_t val)
 {
     uint8_t temp;
@@ -755,6 +707,7 @@ void setAEC(uint8_t val)
         temp |= COM8_FASTAEC | COM8_AEC;
     wrReg(REG_COM8, temp);
 }
+
 bool getAEC(void)
 {
     uint8_t temp;
@@ -763,29 +716,29 @@ bool getAEC(void)
         return true;
     return false;
 }
+
 void setBright(int8_t val)
 {
-    /*	uint8_t temp;
-	temp = rdReg(REG_COM8) & ~COM8_AEC;
-	wrReg(REG_COM8, temp); */
     wrReg(REG_BRIGHT, (uint8_t)val);
 }
+
 int8_t getBright(void)
 {
     int8_t temp;
     temp = (int8_t)rdReg(REG_BRIGHT);
     return temp;
 }
+
 void setContrast(uint8_t val)
 {
     wrReg(REG_CONTRAS, val);
 }
+
 uint8_t getContrast(void)
 {
-    uint8_t temp;
-    temp = rdReg(REG_CONTRAS);
-    return temp;
+    return rdReg(REG_CONTRAS);
 }
+
 void setExposure(uint16_t val)
 {
     uint8_t temp;
@@ -883,12 +836,11 @@ void wrRegs(const struct regval_list* reglist)
     uint8_t val;
 
     for (;;) {
-        uint8_t reg_addr = next->reg_num; //pgm_read_byte(&next->reg_num);
-        uint8_t reg_val = next->value; //pgm_read_byte(&next->value);
-        if ((reg_addr == 0xff) && (reg_val == 0xff)) // end marker
+        uint8_t reg_addr = next->reg_num;
+        uint8_t reg_val = next->value;
+        if ((reg_addr == 0xff) && (reg_val == 0xff)) // end markers
             break;
         wrReg(reg_addr, reg_val);
         next++;
     }
-    //delay(30); //FIXME:
 }

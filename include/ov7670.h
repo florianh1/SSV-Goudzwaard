@@ -8,15 +8,11 @@
 #include "esp_attr.h"
 #include "esp_log.h"
 #include <I2Scamera.h>
-//#include <Arduino.h>
-//#include <pgmspace.h>
 #include <stdio.h>
 
-#include "driver/ledc.h" //#include "esp32-hal-ledc.h" //TODO: check if needed
+#include "driver/ledc.h"
 #include "driver/periph_ctrl.h"
-//#include <Arduino.h> //TODO: rewrite Arduino lib
-#include "driver/i2c.h" //#include <Wire.h>
-//#include <pgmspace.h> //TODO: check if needed
+#include "driver/i2c.h"
 
 #define VGA 0 // 640 x 480
 #define QVGA 1 // 320 X 240
@@ -52,7 +48,6 @@ uint16_t* getLine(uint16_t lineno);
 bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n);
 void getFrame(uint8_t* buf);
 
-void stop(void);
 uint16_t getMID(void);
 uint16_t getPID(void);
 void vflip(bool enable);
