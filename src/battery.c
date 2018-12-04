@@ -1,5 +1,5 @@
-#include <battery.h>
 #include "driver/adc.h"
+#include <battery.h>
 
 /* Port number of UDP-servers */
 #define TRANSMIT_BATTERY_PERCENTAGE_UDP_PORT 3334
@@ -69,6 +69,7 @@ void battery_percentage_transmit_task(void* pvParameter)
             ESP_LOGE(TASK_TAG, "Shutting down socket and restarting...");
             shutdown(sock, 0);
             close(sock);
+            vTaskDelay(10000 / portTICK_PERIOD_MS);
         }
     }
     if (battery_percentage < 5) {

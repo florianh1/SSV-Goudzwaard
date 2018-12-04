@@ -25,6 +25,7 @@
         "ledc.h": "c",
         "ov7670.h": "c",
         "camera.h": "c",
-        "http_server.h": "c"
+        "http_server.h": "c",
+        "motor.h": "c"
     }
 }

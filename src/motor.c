@@ -11,7 +11,7 @@
  * User may need to make changes according to the motor driver they use.
 */
 
-#include "../include/motor.h"
+#include <motor.h>
 
 /******************************************************************************
   pin definitions of the pwm pins
@@ -23,7 +23,6 @@
 //motor motor left
 #define GPIO_PWM1A_OUT 3 //Set GPIO 5 as PWM1A
 #define GPIO_PWM1B_OUT 23 //Set GPIO 23 as PWM1B
-
 
 //settings for the motor speed
 #define MAX_SPEED 100
