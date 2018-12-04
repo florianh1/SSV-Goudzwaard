@@ -372,6 +372,7 @@ esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
     periph_module_enable(PERIPH_LEDC_MODULE);
 
     ledc_timer_config_t timer_conf;
+    timer_conf.bit_num = 1;
     timer_conf.freq_hz = cam_conf.xclk_freq_hz;
     timer_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
     timer_conf.timer_num = cam_conf.ledc_timer;
@@ -808,7 +809,7 @@ uint8_t rdReg(uint8_t reg)
     uint8_t dat = 0x0;
     i2c_cmd_handle_t cmd;
     esp_err_t ret;
-    
+
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_WRITE, true);
