@@ -1,29 +1,45 @@
 #include <camera.h>
 
-// #define CAM_RES VGA
-// #define CAM_WIDTH 640
-// #define CAM_HEIGHT 480
-// #define CAM_DIV 12
+//#define CAM_VGA
+//#define CAM_CIF
+//#define CAM_QVGA
+#define CAM_QQVGA
+//#define CAM_QCIF
 
-// #define CAM_RES CIF
-// #define CAM_WIDTH 352
-// #define CAM_HEIGHT 288
-// #define CAM_DIV 4
+#ifdef CAM_VGA
+#define CAM_RES VGA // カメラ解像度
+#define CAM_WIDTH 640 // カメラ幅
+#define CAM_HEIGHT 480 // カメラ高さ
+#define CAM_DIV 12 // １画面分割数
+#endif
 
-// #define CAM_RES QVGA
-// #define CAM_WIDTH 320
-// #define CAM_HEIGHT 240
-// #define CAM_DIV 3
+#ifdef CAM_CIF
+#define CAM_RES CIF // カメラ解像度
+#define CAM_WIDTH 352 // カメラ幅
+#define CAM_HEIGHT 288 // カメラ高さ
+#define CAM_DIV 4 // １画面分割数
+#endif
 
-// #define CAM_RES QCIF
-// #define CAM_WIDTH 176
-// #define CAM_HEIGHT 144
-// #define CAM_DIV 1
+#ifdef CAM_QVGA
+#define CAM_RES QVGA // カメラ解像度
+#define CAM_WIDTH 320 // カメラ幅
+#define CAM_HEIGHT 240 // カメラ高さ
+#define CAM_DIV 3 // １画面分割数
+#endif
 
-#define CAM_RES QQVGA
-#define CAM_WIDTH 160
-#define CAM_HEIGHT 120
-#define CAM_DIV 1
+#ifdef CAM_QCIF
+#define CAM_RES QCIF // カメラ解像度
+#define CAM_WIDTH 176 // カメラ幅
+#define CAM_HEIGHT 144 // カメラ高さ
+#define CAM_DIV 1 // １画面分割数
+#endif
+
+#ifdef CAM_QQVGA
+#define CAM_RES QQVGA // カメラ解像度
+#define CAM_WIDTH 160 // カメラ幅
+#define CAM_HEIGHT 120 // カメラ高さ
+#define CAM_DIV 1 // １画面分割数
+#endif
 
 //******************************************
 
@@ -39,7 +55,7 @@ camera_config_t cam_conf = {
     .XCLK = 27, // 27 にすると何故かwebsocket通信時に動かなくなる。
     .PCLK = 14,
     .VSYNC = 13,
-    .xclk_freq_hz = 40000000, // XCLK 10MHz
+    .xclk_freq_hz = 20000000, // XCLK 10MHz
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0
 };
