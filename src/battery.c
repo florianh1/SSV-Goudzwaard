@@ -3,14 +3,8 @@
 /* Port number of UDP-servers */
 #define TRANSMIT_BATTERY_PERCENTAGE_UDP_PORT 3334
 
-extern SemaphoreHandle_t xJoystickSemaphore;
-extern SemaphoreHandle_t yJoystickSemaphore;
-extern SemaphoreHandle_t scrollbarSemaphore;
 extern SemaphoreHandle_t batteryPercentageSemaphore;
 
-extern uint8_t joystick_y;
-extern uint8_t joystick_x;
-extern uint8_t scrollbar;
 extern uint8_t battery_percentage;
 
 /**
@@ -62,6 +56,9 @@ void battery_percentage_transmit_task(void* pvParameter)
             shutdown(sock, 0);
             close(sock);
         }
+    }
+    if (battery_percentage < 5) {
+        emptyTank();
     }
     vTaskDelete(NULL);
 }

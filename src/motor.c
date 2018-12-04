@@ -17,12 +17,12 @@
   pin definitions of the pwm pins
 ******************************************************************************/
 //motor right
-#define GPIO_PWM0A_OUT 1 //Set GPIO 15 as PWM0A
-#define GPIO_PWM0B_OUT 3 //Set GPIO 16 as PWM0B
+#define GPIO_PWM0A_OUT 2 //Set GPIO 1 as PWM0A
+#define GPIO_PWM0B_OUT 4 //Set GPIO 2 as PWM0B
 
 //motor motor left
-#define GPIO_PWM1A_OUT 5 //Set GPIO 25 as PWM0A
-#define GPIO_PWM1B_OUT 23 //Set GPIO 26 as PWM0B
+#define GPIO_PWM1A_OUT 5 //Set GPIO 5 as PWM1A
+#define GPIO_PWM1B_OUT 23 //Set GPIO 23 as PWM1B
 
 //settings for the motor speed
 #define MAX_SPEED 100
@@ -38,8 +38,8 @@ extern uint8_t joystick_y;
 extern uint8_t joystick_x;
 
 int8_t positionTabel[3][3][2] = {
-    { { 99, 81 }, { 99, 63 }, { 99, 45 } },
-    { { 66, 45 }, { 66, 36 }, { 99, 27 } },
+    { { 99, 81 }, { 99, 63 }, { 0, 0 } },
+    { { 66, 45 }, { 99, 36 }, { 99, 27 } },
     { { 33, 9 }, { 99, 9 }, { 99, 9 } }
 };
 
@@ -53,20 +53,14 @@ void motor_task(void* arg)
 {
     static const char* TASK_TAG = "motor_task";
 
+    esp_log_level_set("motor_task", ESP_LOG_ERROR);
+
     //1. mcpwm gpio initialization
     ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
-
     MCPWMinit();
 
-    ESP_LOGE(TASK_TAG, "Hierrr");
-
-    while (1) {
-        ESP_LOGE(TASK_TAG, "Looping...");
-        vTaskDelay(1000 / portTICK_RATE_MS);
-    }
-
     //2. initial mcpwm configuration
-    ESP_LOGE(TASK_TAG, "Configuring Initial Parameters of mcpwm...");
+    // ESP_LOGE(TASK_TAG, "Configuring Initial Parameters of mcpwm...");
     mcpwm_config_t pwm_config;
     pwm_config.frequency = 1000; //frequency = 500Hz,
     pwm_config.cmpr_a = 0; //duty cycle of PWMxA = 0
@@ -78,19 +72,12 @@ void motor_task(void* arg)
     float right = 0;
     float left = 0;
 
-    ESP_LOGE(TASK_TAG, "Hierrr");
-
-    while (1) {
-        ESP_LOGE(TASK_TAG, "Looping...");
-        vTaskDelay(1000 / portTICK_RATE_MS);
-    }
-
     while (1) {
         //ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
 
         if (yJoystickSemaphore != NULL && xJoystickSemaphore != NULL) {
 
-            bool ahead = (joystick_y < 3);
+            bool ahead = (joystick_y <= 4);
             bool rightSide = (joystick_x > 4);
 
             int8_t xValue = (joystick_x <= 3) ? abs(joystick_x - 3) : abs(joystick_x - 4);
@@ -103,18 +90,12 @@ void motor_task(void* arg)
                 right = yValue * 33;
                 left = yValue * 33;
             } else if (yValue == 0) { // X in the middle
-                right = (rightSide) ? 0 : (xValue * 33);
-                left = (!rightSide) ? 0 : (xValue * 33);
+                right = (!rightSide) ? 0 : (xValue * 33);
+                left = (rightSide) ? 0 : (xValue * 33);
             } else {
-                // xValue--;
-                // yValue--;
-
-                // right = (rightSide) ? positionTabel[xValue][yValue][1] : positionTabel[xValue][yValue][0];
-                // left = (rightSide) ? positionTabel[xValue][yValue][0] : positionTabel[xValue][yValue][1];
+                right = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][0] : positionTabel[xValue - 1][(4 - yValue) - 1][1];
+                left = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][1] : positionTabel[xValue - 1][(4 - yValue) - 1][0];
             }
-
-            ESP_LOGE(TASK_TAG, "Motor task!");
-            //   ESP_LOGE(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
 
             if (ahead) {
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
