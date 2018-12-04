@@ -94,9 +94,6 @@ void app_main()
         ESP_LOGI(APP_MAIN_TAG, "batteryPercentageSemaphore created");
     }
 
-    // Start blink task for testing
-    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-
     // Initialization of Non-Volitile Storage
     nvs_init();
 
