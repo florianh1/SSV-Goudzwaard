@@ -33,7 +33,7 @@ static void IRAM_ATTR VSYNC_isr(void* arg)
 {
     //	uint32_t gpio_num = (uint32_t)arg;
     if (vsync_check) {
-        BaseType_t xHigherPriorityTaskWoken; // = pdFALSE;
+        BaseType_t xHigherPriorityTaskWoken;
         xSemaphoreGiveFromISR(s_vsync_catch, &xHigherPriorityTaskWoken);
     }
 }
@@ -98,7 +98,6 @@ uint16_t* camera_getLine(uint16_t lineno)
         return NULL;
     }
 
-    // unsigned long time = millis(); //@TODO: replace by xTaskGetTickCount?
     TickType_t time = xTaskGetTickCount();
 
     do {
@@ -107,7 +106,7 @@ uint16_t* camera_getLine(uint16_t lineno)
             i2s_frameReadStart();
         }
         xSemaphoreTake(s_line_ready, portMAX_DELAY);
-        if (xTaskGetTickCount() - time > 1000) { //@TODO: replace by xTaskGetTickCount?
+        if (xTaskGetTickCount() - time > 1000) {
             return NULL;
         }
     } while (lineno != s_line_count);
@@ -122,7 +121,6 @@ static inline void i2s_conf_reset()
     I2S0.conf.val &= ~conf_reset_flags;
 
     while (I2S0.state.rx_fifo_reset_back) {
-        ;
     }
 }
 
@@ -169,10 +167,10 @@ static void i2s_init()
     gpio_matrix_in(s_config.D5, I2S0I_DATA_IN5_IDX, false);
     gpio_matrix_in(s_config.D6, I2S0I_DATA_IN6_IDX, false);
     gpio_matrix_in(s_config.D7, I2S0I_DATA_IN7_IDX, false);
-    gpio_matrix_in(s_config.VSYNC, I2S0I_V_SYNC_IDX, false); // VSYNC は　ネガティブ　にしておくこと
+    gpio_matrix_in(s_config.VSYNC, I2S0I_V_SYNC_IDX, false); // Keep VSYNC negative
     gpio_matrix_in(0x38, I2S0I_H_SYNC_IDX, false); // 0x38 is Allways hight (0x30 is Allways low)
-    gpio_matrix_in(0x38, I2S0I_H_ENABLE_IDX, false); // HREF は　見ない
-    gpio_matrix_in(s_config.PCLK, I2S0I_WS_IN_IDX, false); // PCLK は　HREF が　ON　の時のみ有効にすること
+    gpio_matrix_in(0x38, I2S0I_H_ENABLE_IDX, false); // No HREF
+    gpio_matrix_in(s_config.PCLK, I2S0I_WS_IN_IDX, false); // PCLK should be enabled only whenHREF is ON
 
     // Enable and configure I2S peripheral
     periph_module_enable(PERIPH_I2S0_MODULE); // I2S0 enable
@@ -263,7 +261,6 @@ esp_err_t dma_desc_init(void)
 }
 
 //============= task ===================================
-
 static void line_filter_task(void* pvParameters)
 {
     while (true) {
@@ -302,8 +299,4 @@ static void IRAM_ATTR i2s_isr(void* arg) // 1 Line read done
     }
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xSemaphoreGiveFromISR(s_data_ready, &xHigherPriorityTaskWoken);
-    /*	if (xHigherPriorityTaskWoken != pdFALSE) {
-		portYIELD_FROM_ISR();
-	}
-*/
 }
