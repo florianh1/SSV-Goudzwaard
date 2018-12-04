@@ -53,7 +53,7 @@ void receive_control_task(void* pvParameter)
         ESP_LOGI(TASK_TAG, "Socket binded");
 
         while (1) {
-            //ESP_LOGI(TASK_TAG, "receive_control_task waiting for data");
+            ESP_LOGI(TASK_TAG, "receive_control_task waiting for data");
 
             struct sockaddr_in6 sourceAddr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(sourceAddr);

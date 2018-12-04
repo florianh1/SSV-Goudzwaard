@@ -53,11 +53,17 @@ void motor_task(void* arg)
 {
     static const char* TASK_TAG = "motor_task";
 
-    esp_log_level_set(TASK_TAG, ESP_LOG_VERBOSE);
-
     //1. mcpwm gpio initialization
     ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
+
     MCPWMinit();
+
+    ESP_LOGE(TASK_TAG, "Hierrr");
+
+    while (1) {
+        ESP_LOGE(TASK_TAG, "Looping...");
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
 
     //2. initial mcpwm configuration
     ESP_LOGE(TASK_TAG, "Configuring Initial Parameters of mcpwm...");
@@ -72,8 +78,15 @@ void motor_task(void* arg)
     float right = 0;
     float left = 0;
 
+    ESP_LOGE(TASK_TAG, "Hierrr");
+
     while (1) {
-        // ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
+        ESP_LOGE(TASK_TAG, "Looping...");
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+
+    while (1) {
+        //ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
 
         if (yJoystickSemaphore != NULL && xJoystickSemaphore != NULL) {
 
@@ -93,14 +106,15 @@ void motor_task(void* arg)
                 right = (rightSide) ? 0 : (xValue * 33);
                 left = (!rightSide) ? 0 : (xValue * 33);
             } else {
-                xValue--;
-                yValue--;
+                // xValue--;
+                // yValue--;
 
-                right = (rightSide) ? positionTabel[xValue][yValue][1] : positionTabel[xValue][yValue][0];
-                left = (rightSide) ? positionTabel[xValue][yValue][0] : positionTabel[xValue][yValue][1];
+                // right = (rightSide) ? positionTabel[xValue][yValue][1] : positionTabel[xValue][yValue][0];
+                // left = (rightSide) ? positionTabel[xValue][yValue][0] : positionTabel[xValue][yValue][1];
             }
 
-            ESP_LOGI(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
+            ESP_LOGE(TASK_TAG, "Motor task!");
+            //   ESP_LOGE(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
 
             if (ahead) {
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
