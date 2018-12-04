@@ -429,9 +429,10 @@ esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
     ch_conf.duty = 1;
     ch_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
     ch_conf.gpio_num = cam_conf.XCLK;
-    err = ledc_channel_config(&ch_conf);
 
     ch_conf.hpoint = 0;
+
+    err = ledc_channel_config(&ch_conf);
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "ledc_channel_config failed, rc=%x", err);
@@ -815,72 +816,6 @@ void colorbar_super(bool on)
 
 //----------------------------------------------
 
-int BME280_I2C_bus_read(uint8_t dev_addr, uint8_t reg_addr, uint8_t* reg_data, uint8_t cnt)
-{
-    int iError = 0;
-    esp_err_t espRc;
-
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, reg_addr, true);
-
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_READ, true);
-
-    if (cnt > 1) {
-        i2c_master_read(cmd, reg_data, cnt - 1, I2C_MASTER_ACK);
-    }
-    i2c_master_read_byte(cmd, reg_data + cnt - 1, I2C_MASTER_NACK);
-    i2c_master_stop(cmd);
-
-    espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 100000 / portTICK_PERIOD_MS);
-    if (espRc == ESP_OK) {
-        iError = 0;
-    } else {
-        iError = 1;
-    }
-
-    i2c_cmd_link_delete(cmd);
-
-    return iError;
-}
-
-esp_err_t example_i2c_master_read_slave(uint8_t register_addr)
-{
-    uint8_t data_rd[2] = { 0x00, 0x00 };
-
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_WRITE, true);
-    //i2c_master_write_byte(cmd, ESP_SLAVE_ADDR, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, register_addr, true);
-    i2c_master_stop(cmd);
-
-    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_READ, true);
-    //i2c_master_write_byte(cmd, ESP_SLAVE_ADDR + 1, ACK_CHECK_EN);
-    i2c_master_read_byte(cmd, data_rd, I2C_MASTER_NACK);
-    // i2c_master_read_byte(cmd, data_rd + 1, I2C_MASTER_NACK);
-    i2c_master_stop(cmd);
-
-    ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "example_i2c_master_read_slave error: ret=%d ", ret);
-    } else {
-        ESP_LOGW(TAG, "amplifier_i2c_master_read_slave: register=0x%02x, 0x%02x, 0x%02x ",
-            register_addr, data_rd[0], data_rd[1]);
-    }
-
-    return ret;
-}
-
 void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
 {
     i2c_config_t conf = {
@@ -894,74 +829,23 @@ void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
 
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
-
-    //uint8_t data1[5];
-    // example_i2c_master_read_slave(0x1C);
-    // printf("%s", data1);
-
-    // vTaskDelay(30000 / portTICK_PERIOD_MS);
-
-    int len
-        = 2;
-    uint8_t* data = malloc(10);
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    if (0x21 != -1) {
-        i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_WRITE | I2C_MASTER_WRITE, 0x01);
-        i2c_master_write_byte(cmd, 0x1c, 0x01);
-        i2c_master_start(cmd);
-    }
-    i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_WRITE | I2C_MASTER_READ, 0x01);
-    if (len > 1) {
-        i2c_master_read(cmd, data, len - 1, 0x00);
-    }
-    i2c_master_read_byte(cmd, data + len - 1, 0x1);
-    i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if (ret == ESP_OK) {
-        for (int i = 0; i < len; i++) {
-            printf("0x%02x ", data[i]);
-            if ((i + 1) % 16 == 0) {
-                printf("\r\n");
-            }
-        }
-        if (len % 16) {
-            printf("\r\n");
-        }
-    } else if (ret == ESP_ERR_TIMEOUT) {
-        ESP_LOGW(TAG, "Bus is busy");
-    } else {
-        ESP_LOGW(TAG, "Read failed");
-    }
-    free(data);
 }
 
 void wrReg(uint8_t reg, uint8_t dat)
 {
-    uint8_t rdat;
-    i2c_cmd_handle_t i2c_cmd_handler;
+    i2c_cmd_handle_t cmd;
+    esp_err_t ret;
 
-    i2c_cmd_handler = i2c_cmd_link_create();
+    cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, reg, true);
+    i2c_master_write_byte(cmd, dat, true);
+    i2c_master_stop(cmd);
+    ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
 
-    ESP_ERROR_CHECK(i2c_master_start(i2c_cmd_handler));
-    i2c_master_write_byte(i2c_cmd_handler, OV7670_ADDR, true);
-    i2c_master_write(i2c_cmd_handler, &reg, 1, true);
-
-    //vTaskDelay(20 / portTICK_PERIOD_MS);
-    // delay(20);
-
-    i2c_master_write(i2c_cmd_handler, &dat, 1, true);
-
-    //vTaskDelay(30 / portTICK_PERIOD_MS);
-    //	delay(30);
-
-    ESP_ERROR_CHECK(i2c_master_stop(i2c_cmd_handler));
-    ESP_LOGI(TAG, "i2c write reg:%02X data:%02X\n\r", reg, dat);
-
-    //	rdat = rdReg(reg);
-
-    i2c_cmd_link_delete(i2c_cmd_handler);
+    ESP_LOGI(TAG, "i2c write reg:%02X data:%02X", reg, dat);
 }
 
 uint8_t rdReg(uint8_t reg)
@@ -973,7 +857,6 @@ uint8_t rdReg(uint8_t reg)
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_WRITE, true);
-    //i2c_master_write_byte(cmd, ESP_SLAVE_ADDR, ACK_CHECK_EN);
     i2c_master_write_byte(cmd, reg, true);
     i2c_master_stop(cmd);
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
@@ -982,12 +865,12 @@ uint8_t rdReg(uint8_t reg)
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_READ, true);
-    i2c_master_read_byte(cmd, dat, I2C_MASTER_NACK);
+    i2c_master_read_byte(cmd, &dat, I2C_MASTER_NACK);
     i2c_master_stop(cmd);
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 
-    ESP_LOGI(TAG, "i2c read reg:%02X data:%02X\n\r", reg, dat);
+    ESP_LOGI(TAG, "i2c read reg:%02X data:%02X", reg, dat);
 
     return dat;
 }

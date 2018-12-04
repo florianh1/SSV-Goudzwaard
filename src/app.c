@@ -95,7 +95,7 @@ void app_main()
     }
 
     // Start blink task for testing
-    //xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
 
     // Initialization of Non-Volitile Storage
     nvs_init();
@@ -106,7 +106,7 @@ void app_main()
     start_dhcp_server();
     wifi_init();
 
-    xTaskCreate(&camera_task, "camera_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, NULL);
 
     // xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 4096, NULL, 5, NULL);
     //xTaskCreate(&receive_control_task, "receive_control_task", 4096, NULL, 5, NULL);
