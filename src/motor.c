@@ -17,12 +17,12 @@
   pin definitions of the pwm pins
 ******************************************************************************/
 //motor right
-#define GPIO_PWM0A_OUT 15 //Set GPIO 15 as PWM0A
-#define GPIO_PWM0B_OUT 16 //Set GPIO 16 as PWM0B
+#define GPIO_PWM0A_OUT 1 //Set GPIO 15 as PWM0A
+#define GPIO_PWM0B_OUT 3 //Set GPIO 16 as PWM0B
 
 //motor motor left
-#define GPIO_PWM1A_OUT 25 //Set GPIO 25 as PWM0A
-#define GPIO_PWM1B_OUT 26 //Set GPIO 26 as PWM0B
+#define GPIO_PWM1A_OUT 5 //Set GPIO 25 as PWM0A
+#define GPIO_PWM1B_OUT 23 //Set GPIO 26 as PWM0B
 
 //settings for the motor speed
 #define MAX_SPEED 100
@@ -44,39 +44,6 @@ int8_t positionTabel[3][3][2] = {
 };
 
 /**
- * Control engines task
- * 
- * This task is responsible for controlling the engines. This task determines which way the submarine will move and how fast.
- * 
- * //TODO: move to motor.c
- *
- * @return void
- */
-void control_engines_task(void* pvParameter)
-{
-    static const char* TASK_TAG = "control_engines_task";
-    ESP_LOGI(TASK_TAG, "task started");
-
-    while (1) {
-        if (xJoystickSemaphore != NULL) {
-            if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)10) == pdTRUE) {
-                ESP_LOGI(TASK_TAG, "joystick_x: %d", joystick_x);
-                xSemaphoreGive(xJoystickSemaphore);
-            }
-        }
-
-        if (yJoystickSemaphore != NULL) {
-            if (xSemaphoreTake(yJoystickSemaphore, (TickType_t)10) == pdTRUE) {
-                ESP_LOGI(TASK_TAG, "joystick_y: %d", joystick_y);
-                xSemaphoreGive(yJoystickSemaphore);
-            }
-        }
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-}
-
-/**
  * controls the speed of both motors
  * 
  * @ param void *
@@ -84,7 +51,7 @@ void control_engines_task(void* pvParameter)
  */
 void motor_task(void* arg)
 {
-    static const char* TASK_TAG = "control_engines_task";
+    static const char* TASK_TAG = "motor_task";
 
     esp_log_level_set(TASK_TAG, ESP_LOG_VERBOSE);
 
@@ -156,7 +123,6 @@ void motor_task(void* arg)
  */
 void MCPWMinit()
 {
-    printf("initializing mcpwm gpio...\n");
     //right motor
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, GPIO_PWM0A_OUT);
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, GPIO_PWM0B_OUT);

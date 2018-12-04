@@ -1,7 +1,7 @@
 #include <wifi.h>
 
 /* Wi-Fi SSID, note a maximum character length of 32 */
-#define ESP_WIFI_SSID "SSV GoudZwaard"
+#define ESP_WIFI_SSID "FLORIAN"
 
 /* Wi-Fi password, note a minimal length of 8 and a maximum length of 64 characters */
 #define ESP_WIFI_PASS "12345678"
@@ -42,6 +42,8 @@ esp_err_t event_handler(void* ctx, system_event_t* event)
     case SYSTEM_EVENT_AP_STADISCONNECTED:
         printf("Event: station disconnected from AP\n");
         xEventGroupSetBits(wifi_event_group, CLIENT_DISCONNECTED_BIT);
+
+        emptyTank();
         break;
     case SYSTEM_EVENT_AP_PROBEREQRECVED:
         printf("Event: probe request recieved\n");

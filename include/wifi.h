@@ -20,6 +20,8 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
+#include "syringe.h"
+
 EventGroupHandle_t wifi_event_group;
 
 /******************************************************************************
