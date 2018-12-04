@@ -7,38 +7,38 @@
 //#define CAM_QCIF
 
 #ifdef CAM_VGA
-#define CAM_RES VGA // カメラ解像度
-#define CAM_WIDTH 640 // カメラ幅
-#define CAM_HEIGHT 480 // カメラ高さ
-#define CAM_DIV 12 // １画面分割数
+#define CAM_RES VGA
+#define CAM_WIDTH 640
+#define CAM_HEIGHT 480
+#define CAM_DIV 12
 #endif
 
 #ifdef CAM_CIF
-#define CAM_RES CIF // カメラ解像度
-#define CAM_WIDTH 352 // カメラ幅
-#define CAM_HEIGHT 288 // カメラ高さ
-#define CAM_DIV 4 // １画面分割数
+#define CAM_RES CIF
+#define CAM_WIDTH 352
+#define CAM_HEIGHT 288
+#define CAM_DIV 4
 #endif
 
 #ifdef CAM_QVGA
-#define CAM_RES QVGA // カメラ解像度
-#define CAM_WIDTH 320 // カメラ幅
-#define CAM_HEIGHT 240 // カメラ高さ
-#define CAM_DIV 3 // １画面分割数
+#define CAM_RES QVGA
+#define CAM_WIDTH 320
+#define CAM_HEIGHT 240
+#define CAM_DIV 3
 #endif
 
 #ifdef CAM_QCIF
-#define CAM_RES QCIF // カメラ解像度
-#define CAM_WIDTH 176 // カメラ幅
-#define CAM_HEIGHT 144 // カメラ高さ
-#define CAM_DIV 1 // １画面分割数
+#define CAM_RES QCIF
+#define CAM_WIDTH 176
+#define CAM_HEIGHT 144
+#define CAM_DIV 1
 #endif
 
 #ifdef CAM_QQVGA
-#define CAM_RES QQVGA // カメラ解像度
-#define CAM_WIDTH 160 // カメラ幅
-#define CAM_HEIGHT 120 // カメラ高さ
-#define CAM_DIV 1 // １画面分割数
+#define CAM_RES QQVGA
+#define CAM_WIDTH 160
+#define CAM_HEIGHT 120
+#define CAM_DIV 1
 #endif
 
 //******************************************
@@ -52,7 +52,7 @@ camera_config_t cam_conf = {
     .D5 = 33,
     .D6 = 25,
     .D7 = 26,
-    .XCLK = 27, // 27 にすると何故かwebsocket通信時に動かなくなる。
+    .XCLK = 27,
     .PCLK = 14,
     .VSYNC = 13,
     .xclk_freq_hz = 20000000, // XCLK 10MHz
@@ -92,26 +92,20 @@ uint16_t line_h;
 #define OP_PONG 0x8A
 #define WS_MASK 0x80;
 
-#define UNIT_SIZE 1414 // websocketで１度に送信する最大バイト数
-
 static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=123456789000000000000987654321";
 
 static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
 
-bool setImgHeader(uint16_t w, uint16_t h)
+bool allocateMemory(uint16_t w, uint16_t h)
 {
     line_h = h;
     line_size = w * 2;
-    data_size = 2 + line_size * h; // (LineNo + img) バイト数
-    camData = (uint8_t*)malloc(data_size + 4); // + head size
+    data_size = 2 + line_size * h;
+    camData = (uint8_t*)malloc(data_size);
     if (camData == NULL) {
-        ESP_LOGI("setImgHeader", "******** Memory allocate Error! ***********");
+        ESP_LOGI("allocateMemory", "******** Memory allocate Error! ***********");
         return false;
     }
-    camData[0] = OP_BIN; // バイナリデータ送信ヘッダ
-    camData[1] = 126; // 126:この後に続く２バイトがデータ長。127なら８バイトがデータ長
-    camData[2] = (uint8_t)(data_size / 256); // 送信バイト数(Hi)
-    camData[3] = (uint8_t)(data_size % 256); // 送信バイト数(Lo)
     return true;
 }
 
@@ -135,10 +129,10 @@ void camera_task(void* pvParameter)
     static const char* TASK_TAG = "camera_task";
     ESP_LOGI(TASK_TAG, "task started");
 
-    esp_err_t err = init(&cam_conf, CAM_RES, RGB565); // カメラを初期化 (PCLK 20MHz)
+    esp_err_t err = init(&cam_conf, CAM_RES, RGB565);
 
-    setPCLK(2, DBLV_CLK_x4); // PCLK変更 : 10MHz / (pre+1) * 4 --> 13.3MHz
-    vflip(false); // 画面１８０度回転
+    setPCLK(2, DBLV_CLK_x4);
+    vflip(false);
 
     if (err != ESP_OK) {
         ESP_LOGE(TASK_TAG, "Camera init error");
@@ -169,67 +163,15 @@ void camera_task(void* pvParameter)
     ESP_ERROR_CHECK(http_register_handler(server, "/bmp_stream", HTTP_GET, HTTP_HANDLE_RESPONSE, &handle_rgb_bmp_stream, NULL));
     ESP_LOGI(TASK_TAG, "Open http://192.168.1.1/bmp_stream for single image/bitmap image");
 
+    allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
+
     while (1) {
-        uint16_t y, dy;
-
-        dy = CAM_HEIGHT / CAM_DIV; // １度に送るライン数
-        setImgHeader(CAM_WIDTH, dy); // Websocket用ヘッダを用意
-
-        while (1) {
-            // for (y = 0; y < CAM_HEIGHT; y += dy) {
-            //     getLines(y + 1, &camData[6], dy); // カメラから dyライン分得る。LineNo(top:1)
-
-            //     uint16_t len, send_size;
-            //     uint8_t* pData;
-
-            //     camData[4] = (uint8_t)(y % 256);
-            //     camData[5] = (uint8_t)(y / 256);
-
-            //     len = data_size + 4;
-            //     pData = camData;
-
-            //     while (len) {
-            //         send_size = (len > UNIT_SIZE) ? UNIT_SIZE : len;
-
-            //         char tmp[send_size];
-            //         memcpy(tmp, pData, send_size);
-            //         //WSclient.write(pData, send_size); // websocketデータ送信 ( UNITサイズ以下に区切って送る )
-
-            //         // for (size_t i = 0; i < send_size; i = i + 4) {
-            //         //     printf("%.2x%.2x ", tmp[i], tmp[i + 1]);
-            //         //     vTaskDelay(10 / portTICK_PERIOD_MS);
-
-            //         //     q++;
-            //         //     if (q >= 8) {
-            //         //         q = 0;
-            //         //         printf("\n");
-            //         //     }
-
-            //         //     // printf("\n");
-            //         // }
-
-            //         // printf("\n\n\n");
-
-            //         len -= send_size;
-            //         pData += send_size;
-            //     }
-            // }
-
-            vTaskDelay(10000000 / portTICK_PERIOD_MS);
-        }
-        free(camData);
         vTaskDelay(1000000 / portTICK_PERIOD_MS);
     }
 }
 
 static void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
 {
-    // getLines(0, &camData[0], (CAM_HEIGHT));
-    // if (err != ESP_OK) {
-    //     ESP_LOGD("camera_task", "Camera capture failed with error = %d", err);
-    //     return;
-    // }
-
     bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
     if (header == NULL) {
         return;
@@ -245,16 +187,15 @@ static void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
     http_response_write(http_ctx, &bmp_header);
 
     uint16_t y, dy;
-    dy = CAM_HEIGHT / CAM_DIV; // １度に送るライン数
+    dy = CAM_HEIGHT / CAM_DIV;
 
     for (y = 0; y < CAM_HEIGHT; y += dy) {
-        getLines(y + 1, &camData[0], dy); // カメラから dyライン分得る。LineNo(top:1)
+        getLines(y + 1, &camData[0], dy);
 
         write_frame(http_ctx);
     }
     free(header);
 
-    //write_frame(http_ctx);
     http_response_end(http_ctx);
 }
 
@@ -272,13 +213,7 @@ static void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
     };
 
     while (true) {
-        // getLines(1, &camData[0], (CAM_HEIGHT));
-        // esp_err_t err = camera_run();
-        // if (err != ESP_OK) {
-        //     ESP_LOGD("camera_task", "Camera capture failed with error = %d", err);
-        //     return;
-        // }
-
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         esp_err_t err = http_response_begin_multipart(http_ctx, "image/bitmap",
             data_size + sizeof(*header));
         if (err != ESP_OK) {
@@ -290,10 +225,10 @@ static void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
         }
 
         uint16_t y, dy;
-        dy = CAM_HEIGHT / CAM_DIV; // １度に送るライン数
+        dy = CAM_HEIGHT / CAM_DIV;
 
         for (y = 0; y < CAM_HEIGHT; y += dy) {
-            getLines(y + 1, &camData[0], dy); // カメラから dyライン分得る。LineNo(top:1)
+            getLines(y + 1, &camData[0], dy);
 
             err = write_frame(http_ctx);
             if (err != ESP_OK) {
