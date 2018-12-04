@@ -16,6 +16,7 @@
 
 #include <battery.h>
 #include <blink.h>
+#include <camera.h>
 #include <controls.h>
 #include <motor.h>
 #include <syringe.h>
@@ -105,10 +106,12 @@ void app_main()
     start_dhcp_server();
     wifi_init();
 
-    xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&receive_control_task, "receive_control_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&motor_task, "motor_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, NULL);
 
-    xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
+    // xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 4096, NULL, 5, NULL);
+    //xTaskCreate(&receive_control_task, "receive_control_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(&motor_task, "motor_task", 4096, NULL, 5, NULL);
+
+    // xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
 }

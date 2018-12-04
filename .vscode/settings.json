@@ -20,6 +20,11 @@
         "netdb.h": "c",
         "esp_event_loop.h": "c",
         "esp_wifi.h": "c",
-        "esp_system.h": "c"
+        "esp_system.h": "c",
+        "i2scamera.h": "c",
+        "ledc.h": "c",
+        "ov7670.h": "c",
+        "camera.h": "c",
+        "http_server.h": "c"
     }
 }
