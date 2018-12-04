@@ -538,6 +538,8 @@ void setHStart(uint16_t hstart)
     uint16_t hstop = 0;
     switch (_resolution) {
     case VGA:
+        // hstop = 0;
+        // break;
     case QVGA:
     case QQVGA:
         hstop = 640;
