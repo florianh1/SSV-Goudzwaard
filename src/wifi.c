@@ -42,8 +42,10 @@ esp_err_t event_handler(void* ctx, system_event_t* event)
     case SYSTEM_EVENT_AP_STADISCONNECTED:
         printf("Event: station disconnected from AP\n");
         xEventGroupSetBits(wifi_event_group, CLIENT_DISCONNECTED_BIT);
-
-        emptyTank();
+        vTaskDelay(5000);
+        if (event->event_id == SYSTEM_EVENT_AP_STADISCONNECTED) {
+            emptyTank();
+        }
         break;
     case SYSTEM_EVENT_AP_PROBEREQRECVED:
         printf("Event: probe request recieved\n");

@@ -17,8 +17,8 @@
   pin definitions of the pwm pins
 ******************************************************************************/
 //motor right
-#define GPIO_PWM0A_OUT 1 //Set GPIO 1 as PWM0A
-#define GPIO_PWM0B_OUT 3 //Set GPIO 3 as PWM0B
+#define GPIO_PWM0A_OUT 2 //Set GPIO 1 as PWM0A
+#define GPIO_PWM0B_OUT 4 //Set GPIO 2 as PWM0B
 
 //motor motor left
 #define GPIO_PWM1A_OUT 5 //Set GPIO 5 as PWM1A
@@ -45,16 +45,16 @@ extern uint8_t joystick_x;
  */
 void motor_task(void* arg)
 {
-    static const char* TASK_TAG = "motor_task";
+    // static const char* TASK_TAG = "motor_task";
 
-    esp_log_level_set(TASK_TAG, ESP_LOG_VERBOSE);
+    // esp_log_level_set(TASK_TAG, ESP_LOG_VERBOSE);
 
     //1. mcpwm gpio initialization
-    ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
+    // ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
     MCPWMinit();
 
     //2. initial mcpwm configuration
-    ESP_LOGE(TASK_TAG, "Configuring Initial Parameters of mcpwm...");
+    // ESP_LOGE(TASK_TAG, "Configuring Initial Parameters of mcpwm...");
     mcpwm_config_t pwm_config;
     pwm_config.frequency = 1000; //frequency = 500Hz,
     pwm_config.cmpr_a = 0; //duty cycle of PWMxA = 0
@@ -97,7 +97,7 @@ void motor_task(void* arg)
             }
             */
 
-            ESP_LOGE(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
+            // ESP_LOGE(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
 
             if (ahead) {
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor

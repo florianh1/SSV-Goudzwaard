@@ -103,7 +103,7 @@ void syringeStop()
 
 void emptyTank()
 {
-    static const char* TASK_TAG = "emtpyTank";
+    static const char* TASK_TAG = "emptyTank";
     ESP_LOGI(TASK_TAG, "emptying the balasttank...");
     while (waterML > 0) {
         ESP_LOGI(TASK_TAG, "Emptying tank: Tank volume: %d", waterML);
