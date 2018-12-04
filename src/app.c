@@ -37,7 +37,7 @@ extern EventGroupHandle_t wifi_event_group;
 
 /**
  * Initialization of Non-Volitile Storage
- * 
+ *
  * @return void
  */
 void nvs_init()
