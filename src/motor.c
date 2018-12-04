@@ -37,6 +37,12 @@ extern SemaphoreHandle_t yJoystickSemaphore;
 extern uint8_t joystick_y;
 extern uint8_t joystick_x;
 
+int8_t positionTabel[3][3][2] = {
+    { { 99, 81 }, { 99, 63 }, { 99, 45 } },
+    { { 66, 45 }, { 66, 36 }, { 99, 27 } },
+    { { 33, 9 }, { 99, 9 }, { 99, 9 } }
+};
+
 /**
  * Control engines task
  * 
@@ -119,18 +125,15 @@ void motor_task(void* arg)
             } else if (yValue == 0) { // X in the middle
                 right = (rightSide) ? 0 : (xValue * 33);
                 left = (!rightSide) ? 0 : (xValue * 33);
+            } else {
+                xValue--;
+                yValue--;
+
+                right = (rightSide) ? positionTabel[xValue][yValue][1] : positionTabel[xValue][yValue][0];
+                left = (rightSide) ? positionTabel[xValue][yValue][0] : positionTabel[xValue][yValue][1];
             }
 
-            /*
-            else {
-                int distanceFromMiddle = sqrt((xValue * xValue) + (yValue * yValue));
-
-                right = (rightSide) ? 0 : (distanceFromMiddle * 33);
-                left = (!rightSide) ? 0 : (distanceFromMiddle * 33);
-            }
-            */
-
-            ESP_LOGE(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
+            ESP_LOGI(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
 
             if (ahead) {
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
