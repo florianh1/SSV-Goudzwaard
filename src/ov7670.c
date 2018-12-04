@@ -807,13 +807,14 @@ uint8_t rdReg(uint8_t reg)
 {
     uint8_t dat = 0x0;
     i2c_cmd_handle_t cmd;
+    esp_err_t ret;
     
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, reg, true);
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
+    ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 
     cmd = i2c_cmd_link_create();
@@ -821,7 +822,7 @@ uint8_t rdReg(uint8_t reg)
     i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_READ, true);
     i2c_master_read_byte(cmd, &dat, I2C_MASTER_NACK);
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
+    ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 
     ESP_LOGI(TAG, "i2c read reg:%02X data:%02X", reg, dat);
