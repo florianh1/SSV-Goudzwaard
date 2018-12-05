@@ -4,7 +4,7 @@
 #ifndef _MOTOR_H_
 #define _MOTOR_H_
 
-#include <pins.h>
+#include <settings.h>
 
 #include "esp_attr.h"
 #include "esp_event_loop.h"

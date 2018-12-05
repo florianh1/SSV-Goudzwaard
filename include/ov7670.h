@@ -5,7 +5,7 @@
 #ifndef _OV7670_H_
 #define _OV7670_H_
 
-#include <pins.h>
+#include <settings.h>
 
 #include "esp_attr.h"
 #include "esp_log.h"

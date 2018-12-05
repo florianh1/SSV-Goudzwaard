@@ -26,6 +26,8 @@
         "ov7670.h": "c",
         "camera.h": "c",
         "http_server.h": "c",
-        "motor.h": "c"
+        "motor.h": "c",
+        "task.h": "c",
+        "battery.h": "c"
     }
 }

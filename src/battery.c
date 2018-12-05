@@ -1,8 +1,5 @@
-#include "driver/adc.h"
-#include <battery.h>
 
-/* Port number of UDP-servers */
-#define TRANSMIT_BATTERY_PERCENTAGE_UDP_PORT 3334
+#include <battery.h>
 
 extern SemaphoreHandle_t batteryPercentageSemaphore;
 

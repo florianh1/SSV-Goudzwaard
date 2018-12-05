@@ -4,7 +4,7 @@
 #ifndef _BLINK_H_
 #define _BLINK_H_
 
-#include <pins.h>
+#include <settings.h>
 
 #include "esp_event_loop.h"
 #include "esp_log.h"
