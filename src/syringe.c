@@ -126,9 +126,7 @@ void control_syringe_task(void* pvParameter)
     ESP_LOGI(TASK_TAG, "Syringe task started...");
     ESP_LOGI(TASK_TAG, "Initializing the scrollbar pins...");
     init();
-    // gpio_pad_select_gpio(IN1);
-    // /* Set the GPIO as a push/pull output */
-    // gpio_set_direction(IN1, GPIO_MODE_OUTPUT);
+
     while (1) {
         // if (scrollbarSemaphore != NULL) {
         if (scrollbar < waterML) {
