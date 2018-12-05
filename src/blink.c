@@ -1,8 +1,5 @@
 #include <blink.h>
 
-/* Bling GPIO pin */
-#define BLINK_GPIO 2
-
 /**
  * Blink task
  *

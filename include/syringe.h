@@ -4,6 +4,8 @@
 #ifndef _SYRINGE_H_
 #define _SYRINGE_H_
 
+#include <pins.h>
+
 #include "esp_event_loop.h"
 #include "esp_log.h"
 #include "esp_system.h"

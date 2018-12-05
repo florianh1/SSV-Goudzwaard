@@ -4,6 +4,8 @@
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
 
+#include <pins.h>
+
 #include <I2Scamera.h>
 #include <bitmap.h>
 #include <camera.h>

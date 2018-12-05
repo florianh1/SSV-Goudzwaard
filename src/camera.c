@@ -44,17 +44,17 @@
 //******************************************
 
 camera_config_t cam_conf = {
-    .D0 = 36,
-    .D1 = 39,
-    .D2 = 19, //34,
-    .D3 = 18, //35,
-    .D4 = 5, //32,
-    .D5 = 33,
-    .D6 = 25,
-    .D7 = 26,
-    .XCLK = 27,
-    .PCLK = 14,
-    .VSYNC = 13,
+    .D0 = CAMERA_D0,
+    .D1 = CAMERA_D1,
+    .D2 = CAMERA_D2,
+    .D3 = CAMERA_D3,
+    .D4 = CAMERA_D4,
+    .D5 = CAMERA_D5,
+    .D6 = CAMERA_D6,
+    .D7 = CAMERA_D7,
+    .XCLK = CAMERA_XCLK,
+    .PCLK = CAMERA_PCLK,
+    .VSYNC = CAMERA_VSYNC,
     .xclk_freq_hz = 20000000, // XCLK 10MHz
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0

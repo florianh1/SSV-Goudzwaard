@@ -13,17 +13,6 @@
 
 #include <motor.h>
 
-/******************************************************************************
-  pin definitions of the pwm pins
-******************************************************************************/
-//motor right
-#define GPIO_PWM0A_OUT 2 //Set GPIO 2 as PWM0A
-#define GPIO_PWM0B_OUT 4 //Set GPIO 4 as PWM0B
-
-//motor motor left
-#define GPIO_PWM1A_OUT 3 //Set GPIO 3 as PWM1A
-#define GPIO_PWM1B_OUT 23 //Set GPIO 23 as PWM1B
-
 //settings for the motor speed
 #define MAX_SPEED 100
 #define ACCElERATION_TIMES 3
@@ -119,12 +108,12 @@ void motor_task(void* arg)
 void MCPWMinit()
 {
     //right motor
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, GPIO_PWM0A_OUT);
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, GPIO_PWM0B_OUT);
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, MOTOR_PWM0A_OUT);
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, MOTOR_PWM0B_OUT);
 
     //left motor
-    mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM1A, GPIO_PWM1A_OUT);
-    mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM1B, GPIO_PWM1B_OUT);
+    mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM1A, MOTOR_PWM1A_OUT);
+    mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM1B, MOTOR_PWM1B_OUT);
 }
 
 /**

@@ -4,10 +4,6 @@
 /* Port number of UDP-servers */
 #define TRANSMIT_BATTERY_PERCENTAGE_UDP_PORT 3334
 
-#define BATTERY_CELL_1 ADC1_CHANNEL_4
-#define BATTERY_CELL_2 ADC1_CHANNEL_6
-#define BATTERY_CELL_3 ADC1_CHANNEL_7
-
 extern SemaphoreHandle_t batteryPercentageSemaphore;
 
 extern uint8_t battery_percentage;

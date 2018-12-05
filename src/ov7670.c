@@ -415,7 +415,7 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
         break;
     }
 
-    i2c_init(21, 22, 10000);
+    i2c_init(CAMERA_SDA, CAMERA_SCL, 100000);
 
     err = I2S_camera_init(&cam_conf);
     if (err != ESP_OK) {

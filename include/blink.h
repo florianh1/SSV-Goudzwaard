@@ -4,6 +4,8 @@
 #ifndef _BLINK_H_
 #define _BLINK_H_
 
+#include <pins.h>
+
 #include "esp_event_loop.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -14,11 +16,6 @@
 #include "nvs_flash.h"
 #include <string.h>
 #include <sys/param.h>
-
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include <lwip/netdb.h>
 
 /******************************************************************************
   Function prototypes

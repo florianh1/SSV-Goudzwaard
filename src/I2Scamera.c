@@ -106,7 +106,7 @@ uint16_t* camera_getLine(uint16_t lineno)
             i2s_frameReadStart();
         }
         xSemaphoreTake(s_line_ready, portMAX_DELAY);
-        if (xTaskGetTickCount() - time > 1000) {
+        if (xTaskGetTickCount() - time > 2000) {
             return NULL;
         }
     } while (lineno != s_line_count);
