@@ -9,10 +9,11 @@ extern SemaphoreHandle_t scrollbarSemaphore;
 
 extern uint8_t scrollbar;
 
-#define IN1 16
-#define IN2 17
-#define IN3 18
-#define IN4 19
+#define IN1 12
+#define IN2 15
+#define IN3 16
+#define IN4 17
+
 #define GPIO_ON 1
 #define GPIO_OFF 0
 #define STEPPER_PINS ((1ULL << IN1) | (1ULL << IN2) | (1ULL << IN3) | (1ULL << IN4))
