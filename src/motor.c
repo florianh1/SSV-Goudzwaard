@@ -24,13 +24,10 @@
 #define GPIO_PWM1A_OUT 3 //Set GPIO 5 as PWM1A
 #define GPIO_PWM1B_OUT 23 //Set GPIO 23 as PWM1B
 
-
 //settings for the motor speed
 #define MAX_SPEED 100
 #define ACCElERATION_TIMES 3
 #define ACCELERATION (MAX_SPEED / ACCElERATION_TIMES)
-#define JOYSTICK_MIDDLE_LOW 3
-#define JOYSTICK_MIDDLE_HIGH 4
 
 extern SemaphoreHandle_t xJoystickSemaphore;
 extern SemaphoreHandle_t yJoystickSemaphore;
@@ -74,8 +71,6 @@ void motor_task(void* arg)
     float left = 0;
 
     while (1) {
-        //ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
-
         if (yJoystickSemaphore != NULL && xJoystickSemaphore != NULL) {
 
             bool ahead = (joystick_y <= 4);
@@ -93,7 +88,7 @@ void motor_task(void* arg)
             } else if (yValue == 0) { // X in the middle
                 right = (!rightSide) ? 0 : (xValue * 33);
                 left = (rightSide) ? 0 : (xValue * 33);
-            } else {
+            } else { // Joystick is slanted to any corner
                 right = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][0] : positionTabel[xValue - 1][(4 - yValue) - 1][1];
                 left = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][1] : positionTabel[xValue - 1][(4 - yValue) - 1][0];
             }
