@@ -9,14 +9,9 @@ extern SemaphoreHandle_t scrollbarSemaphore;
 
 extern uint8_t scrollbar;
 
-#define IN1 12
-#define IN2 15
-#define IN3 16
-#define IN4 17
-
 #define GPIO_ON 1
 #define GPIO_OFF 0
-#define STEPPER_PINS ((1ULL << IN1) | (1ULL << IN2) | (1ULL << IN3) | (1ULL << IN4))
+#define STEPPER_PINS ((1ULL << SYRINGE_IN1) | (1ULL << SYRINGE_IN2) | (1ULL << SYRINGE_IN3) | (1ULL << SYRINGE_IN4))
 #define MILLISECONDS(ms) (ms / portTICK_PERIOD_MS)
 #define STEPPER_DELAY MILLISECONDS(10) // 10ms
 
@@ -41,10 +36,10 @@ void init()
 
 void pinSet(int state1, int state2, int state3, int state4)
 {
-    gpio_set_level(IN1, state1);
-    gpio_set_level(IN2, state2);
-    gpio_set_level(IN3, state3);
-    gpio_set_level(IN4, state4);
+    gpio_set_level(SYRINGE_IN1, state1);
+    gpio_set_level(SYRINGE_IN2, state2);
+    gpio_set_level(SYRINGE_IN3, state3);
+    gpio_set_level(SYRINGE_IN4, state4);
 }
 
 void pushML()
@@ -115,7 +110,7 @@ void emptyTank()
 
 /**
  * Control syringe task
- * 
+ *
  * This task is responsible for controlling the syringe. The task is therefore responsible for diving the submarine.
  *
  * @return void

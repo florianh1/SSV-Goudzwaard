@@ -5,6 +5,8 @@
 #ifndef _OV7670_H_
 #define _OV7670_H_
 
+#include <settings.h>
+
 #include "esp_attr.h"
 #include "esp_log.h"
 #include <I2Scamera.h>

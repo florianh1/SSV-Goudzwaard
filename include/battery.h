@@ -4,6 +4,8 @@
 #ifndef _BATTERY_H_
 #define _BATTERY_H_
 
+#include <settings.h>
+
 #include "esp_event_loop.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -19,6 +21,8 @@
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
+
+#include "driver/adc.h"
 
 #include <syringe.h>
 

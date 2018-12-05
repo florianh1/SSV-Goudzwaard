@@ -4,6 +4,8 @@
 #ifndef _CONTROLS_H_
 #define _CONTROLS_H_
 
+#include <settings.h>
+
 #include "esp_event_loop.h"
 #include "esp_log.h"
 #include "esp_system.h"

@@ -1,8 +1,5 @@
 #include <controls.h>
 
-/* Port number of UDP-servers */
-#define RECEIVE_CONTROL_UDP_PORT 3333
-
 extern SemaphoreHandle_t xJoystickSemaphore;
 extern SemaphoreHandle_t yJoystickSemaphore;
 extern SemaphoreHandle_t scrollbarSemaphore;

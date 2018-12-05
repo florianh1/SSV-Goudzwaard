@@ -1,17 +1,5 @@
 #include <wifi.h>
 
-/* Wi-Fi SSID, note a maximum character length of 32 */
-#define ESP_WIFI_SSID "SSV Goudzwaard"
-
-/* Wi-Fi password, note a minimal length of 8 and a maximum length of 64 characters */
-#define ESP_WIFI_PASS "12345678"
-
-/* Wi-Fi channel, note a range from 0 to 13 */
-#define ESP_WIFI_CHANNEL 0
-
-/* Amount of Access Point connections, note a maximum amount of 4 */
-#define AP_MAX_CONNECTIONS 1
-
 const int CLIENT_CONNECTED_BIT = BIT0;
 const int CLIENT_DISCONNECTED_BIT = BIT1;
 const int AP_STARTED_BIT = BIT2;

@@ -4,7 +4,7 @@
 #ifndef _MOTOR_H_
 #define _MOTOR_H_
 
-#include <stdio.h>
+#include <settings.h>
 
 #include "esp_attr.h"
 #include "esp_event_loop.h"
@@ -15,6 +15,7 @@
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
+#include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
 
