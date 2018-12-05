@@ -372,7 +372,7 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
     periph_module_enable(PERIPH_LEDC_MODULE);
 
     ledc_timer_config_t timer_conf;
-    timer_conf.bit_num = 1;
+    timer_conf.duty_resolution = 1;
     timer_conf.freq_hz = cam_conf.xclk_freq_hz;
     timer_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
     timer_conf.timer_num = cam_conf.ledc_timer;
@@ -801,6 +801,8 @@ void wrReg(uint8_t reg, uint8_t dat)
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 
+    ESP_ERROR_CHECK(ret);
+
     ESP_LOGI(TAG, "i2c write reg:%02X data:%02X", reg, dat);
 }
 
@@ -825,6 +827,8 @@ uint8_t rdReg(uint8_t reg)
     i2c_master_stop(cmd);
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
+
+    ESP_ERROR_CHECK(ret);
 
     ESP_LOGI(TAG, "i2c read reg:%02X data:%02X", reg, dat);
 
