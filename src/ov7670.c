@@ -355,7 +355,7 @@ void reset(void)
     setPCLK(1, DBLV_CLK_x4); // PCLK setting : 10MHz / (pre+1) * 4 --> 20MHz
 }
 
-esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode)
+esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode)
 {
     esp_err_t err;
     memcpy(&cam_conf, value, sizeof(cam_conf));

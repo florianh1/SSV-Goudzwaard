@@ -32,7 +32,7 @@
   Function prototypes
 ******************************************************************************/
 void camera_task(void* pvParameter);
-static void handle_rgb_bmp(http_context_t http_ctx, void* ctx);
-static void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx);
+void handle_rgb_bmp(http_context_t http_ctx, void* ctx);
+void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx);
 
 #endif // _CAMERA_H_gt

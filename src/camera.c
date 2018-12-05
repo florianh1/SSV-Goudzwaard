@@ -129,7 +129,7 @@ void camera_task(void* pvParameter)
     static const char* TASK_TAG = "camera_task";
     ESP_LOGI(TASK_TAG, "task started");
 
-    esp_err_t err = init(&cam_conf, CAM_RES, RGB565);
+    esp_err_t err = init_camera(&cam_conf, CAM_RES, RGB565);
 
     setPCLK(2, DBLV_CLK_x4);
     vflip(false);
@@ -170,7 +170,7 @@ void camera_task(void* pvParameter)
     }
 }
 
-static void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
+void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
 {
     bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
     if (header == NULL) {
@@ -199,7 +199,7 @@ static void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
     http_response_end(http_ctx);
 }
 
-static void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
+void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
 {
     http_response_begin(http_ctx, 200, STREAM_CONTENT_TYPE, HTTP_RESPONSE_SIZE_UNKNOWN);
 

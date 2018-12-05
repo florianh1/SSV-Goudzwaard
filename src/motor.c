@@ -11,7 +11,7 @@
  * User may need to make changes according to the motor driver they use.
 */
 
-#include "../include/motor.h"
+#include <motor.h>
 
 /******************************************************************************
   pin definitions of the pwm pins
@@ -37,6 +37,12 @@ extern SemaphoreHandle_t yJoystickSemaphore;
 extern uint8_t joystick_y;
 extern uint8_t joystick_x;
 
+int8_t positionTabel[3][3][2] = {
+    { { 99, 81 }, { 99, 63 }, { 0, 0 } },
+    { { 66, 45 }, { 99, 36 }, { 99, 27 } },
+    { { 33, 9 }, { 99, 9 }, { 99, 9 } }
+};
+
 /**
  * controls the speed of both motors
  * 
@@ -45,12 +51,12 @@ extern uint8_t joystick_x;
  */
 void motor_task(void* arg)
 {
-    // static const char* TASK_TAG = "motor_task";
+    static const char* TASK_TAG = "motor_task";
 
-    // esp_log_level_set(TASK_TAG, ESP_LOG_VERBOSE);
+    esp_log_level_set("motor_task", ESP_LOG_ERROR);
 
     //1. mcpwm gpio initialization
-    // ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
+    ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
     MCPWMinit();
 
     //2. initial mcpwm configuration
@@ -67,11 +73,11 @@ void motor_task(void* arg)
     float left = 0;
 
     while (1) {
-        // ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
+        //ESP_LOGE(TASK_TAG, "Joystick X = %d || Y = %d \n", joystick_x, joystick_y);
 
         if (yJoystickSemaphore != NULL && xJoystickSemaphore != NULL) {
 
-            bool ahead = (joystick_y < 3);
+            bool ahead = (joystick_y <= 4);
             bool rightSide = (joystick_x > 4);
 
             int8_t xValue = (joystick_x <= 3) ? abs(joystick_x - 3) : abs(joystick_x - 4);
@@ -84,20 +90,12 @@ void motor_task(void* arg)
                 right = yValue * 33;
                 left = yValue * 33;
             } else if (yValue == 0) { // X in the middle
-                right = (rightSide) ? 0 : (xValue * 33);
-                left = (!rightSide) ? 0 : (xValue * 33);
+                right = (!rightSide) ? 0 : (xValue * 33);
+                left = (rightSide) ? 0 : (xValue * 33);
+            } else {
+                right = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][0] : positionTabel[xValue - 1][(4 - yValue) - 1][1];
+                left = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][1] : positionTabel[xValue - 1][(4 - yValue) - 1][0];
             }
-
-            /*
-            else {
-                int distanceFromMiddle = sqrt((xValue * xValue) + (yValue * yValue));
-
-                right = (rightSide) ? 0 : (distanceFromMiddle * 33);
-                left = (!rightSide) ? 0 : (distanceFromMiddle * 33);
-            }
-            */
-
-            // ESP_LOGE(TASK_TAG, "Joystick(x: %d - y: %d) Power(L: %f - R: %f)", xValue, yValue, left, right);
 
             if (ahead) {
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor

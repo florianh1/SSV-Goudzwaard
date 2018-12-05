@@ -141,6 +141,6 @@ void control_syringe_task(void* pvParameter)
             vTaskDelay(500 / portTICK_PERIOD_MS);
             syringeStop();
         }
-        ESP_LOGI(TASK_TAG, "scrollbar = %d || waterML = %d", scrollbar, waterML);
+        // ESP_LOGI(TASK_TAG, "scrollbar = %d || waterML = %d", scrollbar, waterML);
     }
 }

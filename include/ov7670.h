@@ -10,9 +10,9 @@
 #include <I2Scamera.h>
 #include <stdio.h>
 
+#include "driver/i2c.h"
 #include "driver/ledc.h"
 #include "driver/periph_ctrl.h"
-#include "driver/i2c.h"
 
 #define VGA 0 // 640 x 480
 #define QVGA 1 // 320 X 240
@@ -33,8 +33,7 @@ struct regval_list {
     uint8_t value;
 };
 
-void reset(void);
-esp_err_t init(const camera_config_t* value, uint8_t res, uint8_t colmode);
+esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode);
 
 void setResolution(uint8_t res);
 void setPCLK(uint8_t pre, uint8_t pll);
