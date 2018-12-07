@@ -56,6 +56,9 @@ void battery_percentage_transmit_task(void* pvParameter)
 
             // transmit every 10 seconds
             vTaskDelay(1000 / portTICK_PERIOD_MS);
+            if (battery_percentage < 5) {
+                emptyTank();
+            }
         }
 
         if (sock != -1) {
@@ -64,9 +67,6 @@ void battery_percentage_transmit_task(void* pvParameter)
             close(sock);
             vTaskDelay(10000 / portTICK_PERIOD_MS);
         }
-    }
-    if (battery_percentage < 5) {
-        emptyTank();
     }
     vTaskDelete(NULL);
 }
