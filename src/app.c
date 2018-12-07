@@ -22,8 +22,6 @@
 #include <syringe.h>
 #include <wifi.h>
 
-#define LWIP_DEBUG 1
-
 SemaphoreHandle_t xJoystickSemaphore = NULL;
 SemaphoreHandle_t yJoystickSemaphore = NULL;
 SemaphoreHandle_t scrollbarSemaphore = NULL;
