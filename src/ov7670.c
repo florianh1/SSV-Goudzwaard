@@ -555,10 +555,13 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 
     for (i = 0; i < n; i++) {
         p_buf = camera_getLine(lineno + i);
+
         if (p_buf == NULL)
             return false;
+
         memcpy(&buf[i * wb], (uint8_t*)p_buf, wb);
     }
+
     return true;
 }
 

@@ -22,6 +22,8 @@
 #include <syringe.h>
 #include <wifi.h>
 
+#define LWIP_DEBUG 1
+
 SemaphoreHandle_t xJoystickSemaphore = NULL;
 SemaphoreHandle_t yJoystickSemaphore = NULL;
 SemaphoreHandle_t scrollbarSemaphore = NULL;
@@ -60,6 +62,9 @@ void nvs_init()
 void app_main()
 {
     static const char* APP_MAIN_TAG = "app_main";
+
+    esp_log_level_set("camera_task", ESP_LOG_INFO);
+    esp_log_level_set("Wifi", ESP_LOG_INFO);
 
     xJoystickSemaphore = xSemaphoreCreateMutex();
     yJoystickSemaphore = xSemaphoreCreateMutex();
