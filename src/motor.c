@@ -1,16 +1,3 @@
-/* brushed dc motor control example
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
-/*
- * This example will show you how to use MCPWM module to control brushed dc motor.
- * This code is tested with L298 motor driver.
- * User may need to make changes according to the motor driver they use.
-*/
-
 #include <motor.h>
 
 //settings for the motor speed
@@ -31,10 +18,9 @@ int8_t positionTabel[3][3][2] = {
 };
 
 /**
- * controls the speed of both motors
+ * @controls the speed of both motors
  * 
- * @ param void *
- * @ return void 
+ * @param arg 
  */
 void motor_task(void* arg)
 {
@@ -96,10 +82,8 @@ void motor_task(void* arg)
 }
 
 /**
- * initialize the gpio pins for pwm signal
+ * @initialize the gpio pins for pwm signal
  * 
- * @ param void *
- * @ return void 
  */
 void MCPWMinit()
 {
@@ -113,10 +97,11 @@ void MCPWMinit()
 }
 
 /**
- * brief motor moves in forward direction, with duty cycle = duty %
+ * @motor moves in forward direction, with duty cycle = duty %
  * 
- * @ param void *
- * @ return void 
+ * @param mcpwm_num 
+ * @param timer_num 
+ * @param duty_cycle 
  */
 void brushed_motor_forward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, float duty_cycle)
 {
@@ -126,11 +111,12 @@ void brushed_motor_forward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, floa
 }
 
 /**
- * brief motor moves in backward direction, with duty cycle = duty %
+ * @motor moves in backward direction, with duty cycle = duty %
  * 
- * @ param void *
- * @ return void 
-*/
+ * @param mcpwm_num 
+ * @param timer_num 
+ * @param duty_cycle 
+ */
 void brushed_motor_backward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, float duty_cycle)
 {
     mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
@@ -139,10 +125,10 @@ void brushed_motor_backward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, flo
 }
 
 /**
- * brief motor stop
+ * @stops the motors
  * 
- * @ param void *
- * @ return void 
+ * @param mcpwm_num 
+ * @param timer_num 
  */
 void brushed_motor_stop(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num)
 {

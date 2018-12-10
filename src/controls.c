@@ -11,9 +11,9 @@ extern uint8_t scrollbar;
 extern uint8_t battery_percentage;
 
 /**
- * receive control task
- *
- * @return void
+ * @TODO:
+ * 
+ * @param pvParameter 
  */
 void receive_control_task(void* pvParameter)
 {

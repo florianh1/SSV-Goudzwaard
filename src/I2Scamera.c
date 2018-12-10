@@ -28,7 +28,11 @@ static esp_err_t dma_desc_init(void);
 static void line_filter_task(void* pvParameters);
 static void IRAM_ATTR VSYNC_isr(void* arg);
 
-//---------- VSYNC Interrupt --------------------------
+/**
+ * @TODO:
+ * 
+ * @param arg 
+ */
 static void IRAM_ATTR VSYNC_isr(void* arg)
 {
     //	uint32_t gpio_num = (uint32_t)arg;
@@ -38,7 +42,12 @@ static void IRAM_ATTR VSYNC_isr(void* arg)
     }
 }
 
-//---------------------------------------------------
+/**
+ * @TODO:
+ * 
+ * @param config 
+ * @return esp_err_t 
+ */
 esp_err_t I2S_camera_init(camera_config_t* config)
 {
     memcpy(&s_config, config, sizeof(s_config));
@@ -82,6 +91,10 @@ esp_err_t I2S_camera_init(camera_config_t* config)
     return ESP_OK;
 }
 
+/**
+ * @TODO:
+ * 
+ */
 static void i2s_frameReadStart(void)
 {
     xSemaphoreTake(s_vsync_catch, portMAX_DELAY); // VSYNC wait
@@ -92,6 +105,12 @@ static void i2s_frameReadStart(void)
     i2s_readStart(s_cur_buffer); // start RX
 }
 
+/**
+ * @TODO:
+ * 
+ * @param lineno 
+ * @return uint16_t* 
+ */
 uint16_t* camera_getLine(uint16_t lineno)
 {
     if (!s_initialized) {
@@ -114,6 +133,10 @@ uint16_t* camera_getLine(uint16_t lineno)
     return (uint16_t*)s_fb[s_fb_idx];
 }
 
+/**
+ * @TODO:
+ * 
+ */
 static inline void i2s_conf_reset()
 {
     const uint32_t conf_reset_flags = I2S_RX_RESET_M | I2S_RX_FIFO_RESET_M | I2S_TX_RESET_M | I2S_TX_FIFO_RESET_M;
@@ -124,6 +147,10 @@ static inline void i2s_conf_reset()
     }
 }
 
+/**
+ * @TODO:
+ * 
+ */
 static void i2s_init()
 {
     // Configure input GPIOs
@@ -213,6 +240,11 @@ static void i2s_init()
         &i2s_isr, NULL, &s_i2s_intr_handle);
 }
 
+/**
+ * @TODO
+ * 
+ * @param index 
+ */
 static void i2s_readStart(int index)
 {
     esp_intr_disable(s_i2s_intr_handle);
@@ -228,6 +260,10 @@ static void i2s_readStart(int index)
     I2S0.conf.rx_start = 1; // receive Start
 }
 
+/**
+ * @TODO:
+ * 
+ */
 static void i2s_stop()
 {
     I2S0.conf.rx_start = 0;
@@ -237,7 +273,11 @@ static void i2s_stop()
     i2s_conf_reset();
 }
 
-//-------------------------------------------------
+/**
+ * @TODO:
+ * 
+ * @return esp_err_t 
+ */
 esp_err_t dma_desc_init(void)
 {
     size_t buf_size = s_buf_line_width * 2; // 2byte --> 32bit(4bytes)
@@ -260,7 +300,11 @@ esp_err_t dma_desc_init(void)
     return ESP_OK;
 }
 
-//============= task ===================================
+/**
+ * @TODO:
+ * 
+ * @param pvParameters 
+ */
 static void line_filter_task(void* pvParameters)
 {
     while (true) {
@@ -285,7 +329,11 @@ static void line_filter_task(void* pvParameters)
     }
 }
 
-//---------- Interrupt ------------------------------
+/**
+ * @TODO:
+ * 
+ * @param arg 
+ */
 static void IRAM_ATTR i2s_isr(void* arg) // 1 Line read done
 {
     I2S0.int_clr.val = I2S0.int_raw.val;

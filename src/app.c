@@ -33,12 +33,10 @@ uint8_t scrollbar = 0;
 uint8_t battery_percentage = 94;
 
 extern EventGroupHandle_t wifi_event_group;
-;
 
 /**
- * Initialization of Non-Volitile Storage
- *
- * @return void
+ * @Initialization of Non-Volitile Storage
+ * 
  */
 void nvs_init()
 {
@@ -53,9 +51,8 @@ void nvs_init()
 }
 
 /**
- * Main loop
- *
- * @return void
+ * @main loop
+ * 
  */
 void app_main()
 {

@@ -17,6 +17,10 @@ extern uint8_t scrollbar;
 
 uint8_t waterML = 0;
 
+/**
+ * @initializes the pins of the syringes
+ * 
+ */
 void init()
 {
     gpio_config_t io_conf;
@@ -34,6 +38,14 @@ void init()
     gpio_config(&io_conf);
 }
 
+/**
+ * @sets the syringe pins HIGH or LOW
+ * 
+ * @param state1 
+ * @param state2 
+ * @param state3 
+ * @param state4 
+ */
 void pinSet(int state1, int state2, int state3, int state4)
 {
     gpio_set_level(SYRINGE_IN1, state1);
@@ -42,6 +54,10 @@ void pinSet(int state1, int state2, int state3, int state4)
     gpio_set_level(SYRINGE_IN4, state4);
 }
 
+/**
+ * @pushes approximately 1mL of water out of each syringe attached
+ * 
+ */
 void pushML()
 {
     for (int i = 0; i < 56; i++) {
@@ -67,6 +83,10 @@ void pushML()
     }
 }
 
+/**
+ * @pulls approximately 1mL of water out of each syringe attached
+ * 
+ */
 void pullML()
 {
     for (int i = 0; i < 56; i++) {
@@ -92,11 +112,19 @@ void pullML()
     }
 }
 
+/**
+ * @sets all output pins of the syringes LOW
+ * 
+ */
 void syringeStop()
 {
     pinSet(GPIO_OFF, GPIO_OFF, GPIO_OFF, GPIO_OFF);
 }
 
+/**
+ * @pushes water out of the syringes untill they are empty
+ * 
+ */
 void emptyTank()
 {
     static const char* TASK_TAG = "emptyTank";
@@ -109,11 +137,9 @@ void emptyTank()
 }
 
 /**
- * Control syringe task
- *
- * This task is responsible for controlling the syringe. The task is therefore responsible for diving the submarine.
- *
- * @return void
+ * @This task is responsible for controlling the syringe. The task is therefore responsible for diving the submarine.
+ * 
+ * @param pvParameter 
  */
 void control_syringe_task(void* pvParameter)
 {

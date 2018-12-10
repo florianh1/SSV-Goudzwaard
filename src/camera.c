@@ -96,6 +96,14 @@ static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=12
 
 static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
 
+/**
+ * @TODO:
+ * 
+ * @param w 
+ * @param h 
+ * @return true 
+ * @return false 
+ */
 bool allocateMemory(uint16_t w, uint16_t h)
 {
     line_h = h;
@@ -109,6 +117,12 @@ bool allocateMemory(uint16_t w, uint16_t h)
     return true;
 }
 
+/**
+ * @TODO:
+ * 
+ * @param http_ctx 
+ * @return esp_err_t 
+ */
 static esp_err_t write_frame(http_context_t http_ctx)
 {
     http_buffer_t fb_data = {
@@ -120,9 +134,9 @@ static esp_err_t write_frame(http_context_t http_ctx)
 }
 
 /**
- * Camera task
- *
- * @return void
+ * @TODO:
+ * 
+ * @param pvParameter 
  */
 void camera_task(void* pvParameter)
 {
@@ -170,6 +184,12 @@ void camera_task(void* pvParameter)
     }
 }
 
+/**
+ * @TODO:
+ * 
+ * @param http_ctx 
+ * @param ctx 
+ */
 void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
 {
     bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
@@ -199,6 +219,12 @@ void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
     http_response_end(http_ctx);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param http_ctx 
+ * @param ctx 
+ */
 void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
 {
     http_response_begin(http_ctx, 200, STREAM_CONTENT_TYPE, HTTP_RESPONSE_SIZE_UNKNOWN);
