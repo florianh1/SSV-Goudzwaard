@@ -124,10 +124,12 @@ uint16_t* camera_getLine(uint16_t lineno)
             vsync_check = true;
             i2s_frameReadStart();
         }
+
         xSemaphoreTake(s_line_ready, portMAX_DELAY);
         if (xTaskGetTickCount() - time > 2000) {
             return NULL;
         }
+
     } while (lineno != s_line_count);
 
     return (uint16_t*)s_fb[s_fb_idx];
