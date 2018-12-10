@@ -99,17 +99,27 @@ static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=12
 
 static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
 
-bool allocateMemory(uint16_t w, uint16_t h)
+uint8_t allocateMemory(uint16_t w, uint16_t h)
 {
+    bitmap_header_t* header = bmp_create_header(w, h);
+    if (header == NULL) {
+        return 0;
+    }
+
     line_h = h;
     line_size = w * 2;
-    data_size = 2 + line_size * h;
+    data_size = (2 + line_size * h) + sizeof(*header);
+    printf("Data size: %d", data_size);
     camData = (uint8_t*)malloc(data_size);
     if (camData == NULL) {
         ESP_LOGI("allocateMemory", "******** Memory allocate Error! ***********");
-        return false;
+        return 0;
     }
-    return true;
+
+    // place header in buffer
+    memcpy(camData, header, sizeof(*header));
+
+    return sizeof(*header);
 }
 
 static esp_err_t write_frame(http_context_t http_ctx)
@@ -166,7 +176,9 @@ void camera_task(void* pvParameter)
     // ESP_ERROR_CHECK(http_register_handler(server, "/bmp_stream", HTTP_GET, HTTP_HANDLE_RESPONSE, &handle_rgb_bmp_stream, NULL));
     // ESP_LOGI(TASK_TAG, "Open http://192.168.1.1/bmp_stream for single image/bitmap image");
 
-    allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
+    uint8_t offset = allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
+
+    ESP_LOGI(TASK_TAG, "Offset %d", offset);
 
     char tx_buffer[SEND_BUFFER_SIZE];
     char addr_str[128];
@@ -196,7 +208,7 @@ void camera_task(void* pvParameter)
 
             for (y = 0; y < CAM_HEIGHT; y += dy) {
 
-                getLines(y + 1, &camData[0], dy);
+                getLines(y + 1, &camData[offset], dy);
 
                 uint8_t parts = (data_size % PACKET_SIZE == 0) ? (data_size / PACKET_SIZE) - 1 : (data_size / PACKET_SIZE);
 
