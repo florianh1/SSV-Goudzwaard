@@ -221,9 +221,9 @@ void camera_task(void* pvParameter)
 
             for (y = 0; y < CAM_HEIGHT; y += dy) {
 
-                getLines(y + 1, &camData[offset], dy);
+                getLines(y++, &camData[offset], dy);
 
-                uint8_t parts = (data_size % PACKET_SIZE == 0) ? (data_size / PACKET_SIZE) - 1 : (data_size / PACKET_SIZE);
+                uint8_t parts = (uint8_t) ((data_size % PACKET_SIZE == 0) ? (data_size / PACKET_SIZE) - 1 : (data_size / PACKET_SIZE));
 
                 for (uint8_t part = 0; part <= parts; part++) {
 
@@ -240,19 +240,21 @@ void camera_task(void* pvParameter)
                         memcpy(tx_buffer + 2, (camData + (part * PACKET_SIZE)), PACKET_SIZE);
                     }
 
-                    int err = sendto(sock, &tx_buffer, sizeof(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
+                    int send_err = sendto(sock, &tx_buffer, sizeof(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
 
-                    if (err < 0) {
-                        ESP_LOGE(TASK_TAG, "Error occured during sending video frame: errno %d size %d", err, data_size);
+                    if (send_err < 0) {
+                        ESP_LOGE(TASK_TAG, "Error occurred during sending video frame: errno %d size %d", send_err, data_size);
                         break;
                     }
+
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
                 }
             }
 
             ESP_LOGI(TASK_TAG, "Message task! camera");
 
             // transmit every 5 seconds
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
         }
 
         if (sock != -1) {
