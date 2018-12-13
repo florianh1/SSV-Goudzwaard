@@ -1,11 +1,5 @@
 #include <camera.h>
 
-//#define CAM_VGA
-//#define CAM_CIF
-//#define CAM_QVGA
-#define CAM_QQVGA
-//#define CAM_QCIF
-
 #ifdef CAM_VGA
 #define CAM_RES VGA
 #define CAM_WIDTH 640
@@ -98,9 +92,16 @@ static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
 
 bool allocateMemory(uint16_t w, uint16_t h)
 {
+    
+#ifdef CONVERT_RGB565_TO_RGB332
+    line_h = h;
+    line_size = w;
+    data_size = 2 + line_size * h;
+#else
     line_h = h;
     line_size = w * 2;
     data_size = 2 + line_size * h;
+#endif // CONVERT_RGB565_TO_RGB332
     camData = (uint8_t*)malloc(data_size);
     if (camData == NULL) {
         ESP_LOGI("allocateMemory", "******** Memory allocate Error! ***********");
@@ -129,7 +130,7 @@ void camera_task(void* pvParameter)
     static const char* TASK_TAG = "camera_task";
     ESP_LOGI(TASK_TAG, "task started");
 
-    esp_err_t err = init_camera(&cam_conf, CAM_RES, RGB565);
+    esp_err_t err = init_camera(&cam_conf, CAM_RES, CAM_COLOR);
 
     setPCLK(2, DBLV_CLK_x4);
     vflip(false);
@@ -172,7 +173,9 @@ void camera_task(void* pvParameter)
 
 void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
 {
+#ifdef USE_BMP_HEADER
     bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
+
     if (header == NULL) {
         return;
     }
@@ -185,16 +188,18 @@ void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
     http_response_set_header(http_ctx, "Content-disposition", "inline; filename=capture.bmp");
 
     http_response_write(http_ctx, &bmp_header);
+#endif
 
     uint16_t y, dy;
     dy = CAM_HEIGHT / CAM_DIV;
 
     for (y = 0; y < CAM_HEIGHT; y += dy) {
         getLines(y + 1, &camData[0], dy);
-
         write_frame(http_ctx);
     }
+#ifdef USE_BMP_HEADER
     free(header);
+#endif
 
     http_response_end(http_ctx);
 }

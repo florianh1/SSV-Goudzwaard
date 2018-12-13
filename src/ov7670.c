@@ -541,17 +541,23 @@ uint16_t getVStart(void)
     return vstart;
 }
 
-uint16_t* getLine(uint16_t lineno)
-{
-    uint16_t* p_buf;
-    p_buf = camera_getLine(lineno);
-    return p_buf;
-}
+// uint16_t* getLine(uint16_t lineno) //TODO: check if this function is needed
+// {
+//     uint16_t* p_buf;
+//     p_buf = camera_getLine(lineno);
+//     return p_buf;
+// }
 
 bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 {
+#ifdef CONVERT_RGB565_TO_RGB332
+    uint8_t *p_buf;
+    uint16_t i;
+    uint16_t wb = cam_conf.frame_width;
+#else
     uint16_t i, *p_buf;
     uint16_t wb = cam_conf.frame_width * cam_conf.pixel_byte_num;
+#endif // CONVERT_RGB565_TO_RGB332
 
     for (i = 0; i < n; i++) {
         p_buf = camera_getLine(lineno + i);
@@ -562,10 +568,10 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
     return true;
 }
 
-void getFrame(uint8_t* buf)
-{
-    getLines(1, buf, cam_conf.frame_height);
-}
+// void getFrame(uint8_t* buf) //TODO: check if this function is needed
+// {
+//     getLines(1, buf, cam_conf.frame_height);
+// }
 
 void setColor(uint8_t colormode)
 {

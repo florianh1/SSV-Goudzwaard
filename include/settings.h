@@ -11,7 +11,7 @@
 /* Wi-Fi SSID, note a maximum character length of 32 */
 #define ESP_WIFI_SSID "SSV Goudzwaard"
 
-/* Wi-Fi password, note a minimal length of 8 and a maximum length of 64 characters */
+/* Wi-Fi password, note a minimum length of 8 and a maximum length of 64 characters */
 #define ESP_WIFI_PASS "12345678"
 
 /* Wi-Fi channel, note a range from 0 to 13 */
@@ -60,6 +60,26 @@
 
 // Blink pin for testing
 #define BLINK_GPIO 2
+
+/******************************************************************************
+  Camera Settings
+******************************************************************************/
+
+// Camera image settings
+//#define CAM_VGA
+//#define CAM_CIF
+//#define CAM_QVGA
+#define CAM_QQVGA
+//#define CAM_QCIF
+
+// Camera color settings
+//#define CAM_COLOR YUV422
+#define CAM_COLOR RGB565
+//#define CAM_COLOR BAYER_RAW
+//#define CAM_COLOR PBAYER_RAW
+
+#define CONVERT_RGB565_TO_RGB332
+//#define USE_BMP_HEADER
 
 /******************************************************************************
   Port numbers

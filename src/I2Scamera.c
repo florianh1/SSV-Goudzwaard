@@ -5,7 +5,11 @@ static const char* TAG = "Camera";
 static camera_config_t s_config;
 static lldesc_t s_dma_desc[2];
 static uint32_t* s_dma_buf[2];
+#ifdef CONVERT_RGB565_TO_RGB332
+static uint8_t* s_fb;
+#else
 static uint8_t* s_fb[2];
+#endif // CONVERT_RGB565_TO_RGB332
 static volatile int s_fb_idx = 0;
 static bool s_initialized = false;
 static int s_buf_line_width;
@@ -46,6 +50,15 @@ esp_err_t I2S_camera_init(camera_config_t* config)
     s_buf_line_width = s_config.frame_width * s_config.pixel_byte_num;
     s_buf_height = s_config.frame_height;
 
+#ifdef CONVERT_RGB565_TO_RGB332
+    if (s_fb != NULL)
+        free(s_fb);
+    s_fb = (uint8_t*)malloc(s_buf_line_width);
+    if (s_fb == NULL) {
+        ESP_LOGE(TAG, "Failed to allocate frame buffer");
+        return ESP_ERR_NO_MEM;
+    }
+#else
     for (int i = 0; i < 2; i++) {
         if (s_fb[i] != NULL)
             free(s_fb[i]);
@@ -55,6 +68,7 @@ esp_err_t I2S_camera_init(camera_config_t* config)
             return ESP_ERR_NO_MEM;
         }
     }
+#endif
     s_fb_idx = 0;
     s_data_ready = xSemaphoreCreateBinary();
     s_line_ready = xSemaphoreCreateBinary();
@@ -63,8 +77,12 @@ esp_err_t I2S_camera_init(camera_config_t* config)
     i2s_init();
     esp_err_t err = dma_desc_init();
     if (err != ESP_OK) {
+#ifdef CONVERT_RGB565_TO_RGB332
+        free(s_fb);
+#else
         free(s_fb[0]);
         free(s_fb[1]);
+#endif
         ESP_LOGE(TAG, "Faild to allocate dma buffer");
         return err;
     }
@@ -92,8 +110,13 @@ static void i2s_frameReadStart(void)
     i2s_readStart(s_cur_buffer); // start RX
 }
 
+#ifdef CONVERT_RGB565_TO_RGB332
+uint8_t* camera_getLine(uint16_t lineno)
+{
+#else
 uint16_t* camera_getLine(uint16_t lineno)
 {
+#endif // CONVERT_RGB565_TO_RGB332
     if (!s_initialized) {
         return NULL;
     }
@@ -105,13 +128,18 @@ uint16_t* camera_getLine(uint16_t lineno)
             vsync_check = true;
             i2s_frameReadStart();
         }
+
         xSemaphoreTake(s_line_ready, portMAX_DELAY);
         if (xTaskGetTickCount() - time > 2000) {
             return NULL;
         }
     } while (lineno != s_line_count);
 
+#ifdef CONVERT_RGB565_TO_RGB332
+    return (uint8_t*)s_fb;
+#else
     return (uint16_t*)s_fb[s_fb_idx];
+#endif // CONVERT_RGB565_TO_RGB332
 }
 
 static inline void i2s_conf_reset()
@@ -261,6 +289,31 @@ esp_err_t dma_desc_init(void)
 }
 
 //============= task ===================================
+#ifdef CONVERT_RGB565_TO_RGB332
+static void line_filter_task(void* pvParameters)
+{
+    while (true) {
+        gpio_set_level(2, 1); // 2 = LED pin
+
+        xSemaphoreTake(s_data_ready, portMAX_DELAY);
+        int buf_idx = !s_cur_buffer;
+
+        gpio_set_level(2, 0); // 2 = LED pin
+
+        s_fb_idx = (s_fb_idx + 1) % 1;
+        uint8_t* pfb = s_fb;
+        const uint32_t* buf = s_dma_buf[buf_idx];
+
+        for (int i = 0; i < s_buf_line_width; ++i) {
+            uint32_t v = *buf++; // Get 32 bit from DMA buffer, 1 Pixel = (2Byte i2s overhead + 2Byte pixeldata)
+            uint16_t a = (uint16_t)(v & 0x000000ff) + ((v & 0x00ff0000) >> 8);
+
+            *pfb++ = (uint8_t)((((a & 0xF800) >> 13) << 5) + (((a & 0x7E0) >> 8) << 2) + ((a & 0x1F) / 8)); // Convert RGB565 to RGB332
+        }
+        xSemaphoreGive(s_line_ready);
+    }
+}
+#else
 static void line_filter_task(void* pvParameters)
 {
     while (true) {
@@ -276,14 +329,15 @@ static void line_filter_task(void* pvParameters)
         const uint32_t* buf = s_dma_buf[buf_idx];
 
         for (int i = 0; i < s_buf_line_width / 2; ++i) {
-            uint32_t v = *buf++; // Get 32 bit from DMA buffer
-            // 1 Pixel = (2Byte i2s overhead + 2Byte pixeldata)
+            uint32_t v = *buf++; // Get 32 bit from DMA buffer, 1 Pixel = (2Byte i2s overhead + 2Byte pixeldata)
+
             *pfb++ = (uint8_t)(v & 0x000000ff);
             *pfb++ = (uint8_t)((v & 0x00ff0000) >> 16);
         }
         xSemaphoreGive(s_line_ready);
     }
 }
+#endif
 
 //---------- Interrupt ------------------------------
 static void IRAM_ATTR i2s_isr(void* arg) // 1 Line read done
