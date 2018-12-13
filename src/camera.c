@@ -100,7 +100,7 @@ static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
  * @param h
  * @uint8_t
  */
-uint8_t allocateMemory(uint16_t w, uint16_t h)
+bool allocateMemory(uint16_t w, uint16_t h)
 {
     
 #ifdef CONVERT_RGB565_TO_RGB332
@@ -115,13 +115,10 @@ uint8_t allocateMemory(uint16_t w, uint16_t h)
     camData = (uint8_t*)malloc(data_size);
     if (camData == NULL) {
         ESP_LOGI("allocateMemory", "******** Memory allocate Error! ***********");
-        return 0;
+        return false;
     }
 
-    // place header in buffer
-    memcpy(camData, header, sizeof(*header));
-
-    return sizeof(*header);
+    return true;
 }
 
 /**
@@ -184,9 +181,7 @@ void camera_task(void* pvParameter)
     // ESP_ERROR_CHECK(http_register_handler(server, "/bmp_stream", HTTP_GET, HTTP_HANDLE_RESPONSE, &handle_rgb_bmp_stream, NULL));
     // ESP_LOGI(TASK_TAG, "Open http://192.168.1.1/bmp_stream for single image/bitmap image");
 
-    uint8_t offset = allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
-
-    ESP_LOGI(TASK_TAG, "Offset %d", offset);
+    allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
 
     char tx_buffer[SEND_BUFFER_SIZE];
     char addr_str[128];
@@ -216,7 +211,7 @@ void camera_task(void* pvParameter)
 
             for (y = 0; y < CAM_HEIGHT; y += dy) {
 
-                getLines(y + 1, &camData[offset], dy);
+                getLines(y + 1, &camData[0], dy);
 
                 uint8_t parts = (data_size % PACKET_SIZE == 0) ? (data_size / PACKET_SIZE) - 1 : (data_size / PACKET_SIZE);
 
