@@ -342,6 +342,10 @@ void conf_setFrameSize(uint8_t res)
     }
 }
 
+/**
+ * @TODO:
+ * 
+ */
 void reset(void)
 {
     wrReg(REG_COM7, COM7_RESET); // All reg reset
@@ -355,6 +359,14 @@ void reset(void)
     setPCLK(1, DBLV_CLK_x4); // PCLK setting : 10MHz / (pre+1) * 4 --> 20MHz
 }
 
+/**
+ * @TODO:
+ * 
+ * @param value 
+ * @param res 
+ * @param colmode 
+ * @return esp_err_t 
+ */
 esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode)
 {
     esp_err_t err;
@@ -429,6 +441,11 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
     return err;
 }
 
+/**
+ * @TODO:
+ * 
+ * @param res 
+ */
 void setResolution(uint8_t res)
 {
     uint8_t temp;
@@ -491,6 +508,11 @@ void setResolution(uint8_t res)
     setVStart(vstart);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param hstart 
+ */
 void setHStart(uint16_t hstart)
 {
     uint16_t hstop = 0;
@@ -517,6 +539,11 @@ void setHStart(uint16_t hstart)
     rewrCLKRC();
 }
 
+/**
+ * @TODO:
+ * 
+ * @param vstart 
+ */
 void setVStart(uint16_t vstart)
 {
     uint16_t vstop;
@@ -527,6 +554,11 @@ void setVStart(uint16_t vstart)
     rewrCLKRC();
 }
 
+/**
+ * @TODO:
+ * 
+ * @return uint16_t 
+ */
 uint16_t getHStart(void)
 {
     uint16_t hstart;
@@ -534,6 +566,11 @@ uint16_t getHStart(void)
     return hstart;
 }
 
+/**
+ * @TODO:
+ * 
+ * @return uint16_t 
+ */
 uint16_t getVStart(void)
 {
     uint16_t vstart;
@@ -548,6 +585,15 @@ uint16_t getVStart(void)
 //     return p_buf;
 // }
 
+/**
+ * @TODO:
+ * 
+ * @param lineno 
+ * @param buf 
+ * @param n 
+ * @return true 
+ * @return false 
+ */
 bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 {
 #ifdef CONVERT_RGB565_TO_RGB332
@@ -561,10 +607,13 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 
     for (i = 0; i < n; i++) {
         p_buf = camera_getLine(lineno + i);
+
         if (p_buf == NULL)
             return false;
+
         memcpy(&buf[i * wb], (uint8_t*)p_buf, wb);
     }
+
     return true;
 }
 
@@ -573,6 +622,11 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 //     getLines(1, buf, cam_conf.frame_height);
 // }
 
+/**
+ * @TODO:
+ * 
+ * @param colormode 
+ */
 void setColor(uint8_t colormode)
 {
     uint8_t temp;
@@ -604,6 +658,12 @@ void setColor(uint8_t colormode)
     rewrCLKRC(); //according to the Linux kernel driver PCLK needs rewriting
 }
 
+/**
+ * @TODO
+ * 
+ * @param pre 
+ * @param pll 
+ */
 void setPCLK(uint8_t pre, uint8_t pll)
 {
     uint8_t temp;
@@ -614,6 +674,10 @@ void setPCLK(uint8_t pre, uint8_t pll)
     rewrCLKRC();
 }
 
+/**
+ * @TODO:
+ * 
+ */
 void rewrCLKRC(void)
 {
     uint8_t temp;
@@ -621,6 +685,11 @@ void rewrCLKRC(void)
     wrReg(REG_CLKRC, temp); //according to the Linux kernel driver rgb565 PCLK needs rewriting
 }
 
+/**
+ * @TODO:
+ * 
+ * @param enable 
+ */
 void vflip(bool enable)
 {
     uint8_t temp;
@@ -630,16 +699,31 @@ void vflip(bool enable)
     wrReg(REG_MVFP, temp);
 }
 
+/**
+ * @TODO:
+ * 
+ * @return uint16_t 
+ */
 uint16_t getMID(void)
 {
     return ((uint16_t)rdReg(REG_MIDH) << 8 | (uint16_t)rdReg(REG_MIDL));
 }
 
+/**
+ * @TODO:
+ * 
+ * @return uint16_t 
+ */
 uint16_t getPID(void)
 {
     return ((uint16_t)rdReg(REG_PID) << 8 | (uint16_t)rdReg(REG_VER));
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setGain(uint16_t val)
 {
     if (val > 1023)
@@ -650,11 +734,21 @@ void setGain(uint16_t val)
     wrReg(REG_VREF, temp | ((val / 256) << 6));
 }
 
+/**
+ * @TODO:
+ * 
+ * @return uint16_t 
+ */
 uint16_t getGain(void)
 {
     return ((uint16_t)rdReg(REG_GAIN) + (uint16_t)((rdReg(REG_VREF) & 0x3F)) * 256);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setAGC(uint8_t val)
 {
     uint8_t temp;
@@ -664,6 +758,12 @@ void setAGC(uint8_t val)
     wrReg(REG_COM8, temp);
 }
 
+/**
+ * @TODO:
+ * 
+ * @return true 
+ * @return false 
+ */
 bool getAGC(void)
 {
     uint8_t temp;
@@ -673,6 +773,11 @@ bool getAGC(void)
     return false;
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setAWB(uint8_t val)
 {
     uint8_t temp;
@@ -682,6 +787,12 @@ void setAWB(uint8_t val)
     wrReg(REG_COM8, temp);
 }
 
+/**
+ * @TODO:
+ * 
+ * @return true 
+ * @return false 
+ */
 bool getAWB(void)
 {
     uint8_t temp;
@@ -691,21 +802,41 @@ bool getAWB(void)
     return false;
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setAWBB(uint8_t val)
 {
     wrReg(REG_BLUE, val);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setAWBR(uint8_t val)
 {
     wrReg(REG_RED, val);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setAWBG(uint8_t val)
 {
     wrReg(REG_GGAIN, val);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setAEC(uint8_t val)
 {
     uint8_t temp;
@@ -714,7 +845,12 @@ void setAEC(uint8_t val)
         temp |= COM8_FASTAEC | COM8_AEC;
     wrReg(REG_COM8, temp);
 }
-
+/**
+ * @TODO
+ * 
+ * @return true 
+ * @return false 
+ */
 bool getAEC(void)
 {
     uint8_t temp;
@@ -724,11 +860,21 @@ bool getAEC(void)
     return false;
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setBright(int8_t val)
 {
     wrReg(REG_BRIGHT, (uint8_t)val);
 }
 
+/**
+ * @TODO:
+ * 
+ * @return int8_t 
+ */
 int8_t getBright(void)
 {
     int8_t temp;
@@ -736,16 +882,31 @@ int8_t getBright(void)
     return temp;
 }
 
+/**
+ * @TODO
+ * 
+ * @param val 
+ */
 void setContrast(uint8_t val)
 {
     wrReg(REG_CONTRAS, val);
 }
 
+/**
+ * @TODO:
+ * 
+ * @return uint8_t 
+ */
 uint8_t getContrast(void)
 {
     return rdReg(REG_CONTRAS);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param val 
+ */
 void setExposure(uint16_t val)
 {
     uint8_t temp;
@@ -756,6 +917,11 @@ void setExposure(uint16_t val)
     wrReg(REG_AECHH, temp | (uint8_t)(val / 1024));
 }
 
+/**
+ * @TODO:
+ * 
+ * @param on 
+ */
 void colorbar(bool on)
 {
     uint8_t temp;
@@ -766,6 +932,11 @@ void colorbar(bool on)
         wrReg(REG_COM17, temp & ~COM17_CBAR);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param on 
+ */
 void colorbar_super(bool on)
 {
     uint8_t temp;
@@ -776,8 +947,13 @@ void colorbar_super(bool on)
         wrReg(REG_COM7, temp & ~COM7_CBAR);
 }
 
-//----------------------------------------------
-
+/**
+ * @TODO:
+ * 
+ * @param sda 
+ * @param scl 
+ * @param clk_speed 
+ */
 void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
 {
     i2c_config_t conf = {
@@ -793,6 +969,12 @@ void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
 }
 
+/**
+ * @TODO:
+ * 
+ * @param reg 
+ * @param dat 
+ */
 void wrReg(uint8_t reg, uint8_t dat)
 {
     i2c_cmd_handle_t cmd;
@@ -812,6 +994,12 @@ void wrReg(uint8_t reg, uint8_t dat)
     ESP_LOGI(TAG, "i2c write reg:%02X data:%02X", reg, dat);
 }
 
+/**
+ * @TODO:
+ * 
+ * @param reg 
+ * @return uint8_t 
+ */
 uint8_t rdReg(uint8_t reg)
 {
     uint8_t dat = 0x0;
@@ -841,6 +1029,11 @@ uint8_t rdReg(uint8_t reg)
     return dat;
 }
 
+/**
+ * @TODO:
+ * 
+ * @param reglist 
+ */
 void wrRegs(const struct regval_list* reglist)
 {
     const struct regval_list* next = reglist;

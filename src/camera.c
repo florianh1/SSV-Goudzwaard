@@ -35,6 +35,9 @@
 #define CAM_DIV 1
 #endif
 
+#define PACKET_SIZE 2000
+#define SEND_BUFFER_SIZE 2048
+
 //******************************************
 
 camera_config_t cam_conf = {
@@ -90,7 +93,14 @@ static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=12
 
 static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
 
-bool allocateMemory(uint16_t w, uint16_t h)
+/**
+ * @TODO:
+ *
+ * @param w
+ * @param h
+ * @uint8_t
+ */
+uint8_t allocateMemory(uint16_t w, uint16_t h)
 {
     
 #ifdef CONVERT_RGB565_TO_RGB332
@@ -105,11 +115,21 @@ bool allocateMemory(uint16_t w, uint16_t h)
     camData = (uint8_t*)malloc(data_size);
     if (camData == NULL) {
         ESP_LOGI("allocateMemory", "******** Memory allocate Error! ***********");
-        return false;
+        return 0;
     }
-    return true;
+
+    // place header in buffer
+    memcpy(camData, header, sizeof(*header));
+
+    return sizeof(*header);
 }
 
+/**
+ * @TODO:
+ *
+ * @param http_ctx
+ * @return esp_err_t
+ */
 static esp_err_t write_frame(http_context_t http_ctx)
 {
     http_buffer_t fb_data = {
@@ -121,9 +141,9 @@ static esp_err_t write_frame(http_context_t http_ctx)
 }
 
 /**
- * Camera task
+ * @TODO:
  *
- * @return void
+ * @param pvParameter
  */
 void camera_task(void* pvParameter)
 {
@@ -155,22 +175,100 @@ void camera_task(void* pvParameter)
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    http_server_t server;
-    http_server_options_t http_options = HTTP_SERVER_OPTIONS_DEFAULT();
-    ESP_ERROR_CHECK(http_server_start(&http_options, &server));
+    // http_server_t server;
+    // http_server_options_t http_options = HTTP_SERVER_OPTIONS_DEFAULT();
+    // ESP_ERROR_CHECK(http_server_start(&http_options, &server));
 
-    ESP_ERROR_CHECK(http_register_handler(server, "/bmp.bmp", HTTP_GET, HTTP_HANDLE_RESPONSE, &handle_rgb_bmp, NULL));
-    ESP_LOGI(TASK_TAG, "Open http://192.168.1.1/bmp.bmp for single image/bitmap image");
-    ESP_ERROR_CHECK(http_register_handler(server, "/bmp_stream", HTTP_GET, HTTP_HANDLE_RESPONSE, &handle_rgb_bmp_stream, NULL));
-    ESP_LOGI(TASK_TAG, "Open http://192.168.1.1/bmp_stream for single image/bitmap image");
+    // ESP_ERROR_CHECK(http_register_handler(server, "/bmp.bmp", HTTP_GET, HTTP_HANDLE_RESPONSE, &handle_rgb_bmp, NULL));
+    // ESP_LOGI(TASK_TAG, "Open http://192.168.1.1/bmp.bmp for single image/bitmap image");
+    // ESP_ERROR_CHECK(http_register_handler(server, "/bmp_stream", HTTP_GET, HTTP_HANDLE_RESPONSE, &handle_rgb_bmp_stream, NULL));
+    // ESP_LOGI(TASK_TAG, "Open http://192.168.1.1/bmp_stream for single image/bitmap image");
 
-    allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
+    uint8_t offset = allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
+
+    ESP_LOGI(TASK_TAG, "Offset %d", offset);
+
+    char tx_buffer[SEND_BUFFER_SIZE];
+    char addr_str[128];
+    int addr_family;
+    int ip_protocol;
 
     while (1) {
-        vTaskDelay(1000000 / portTICK_PERIOD_MS);
+        struct sockaddr_in destAddr;
+        destAddr.sin_addr.s_addr = inet_addr("192.168.1.2"); //TODO: set correct address addres is most of time 192.168.1.2
+        destAddr.sin_family = AF_INET;
+        destAddr.sin_port = htons(5000);
+        addr_family = AF_INET;
+        ip_protocol = IPPROTO_IP;
+        inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
+
+        int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
+        if (sock < 0) {
+            ESP_LOGE(TASK_TAG, "Unable to create socket: errno %d", errno);
+            break;
+        }
+        ESP_LOGI(TASK_TAG, "Socket created");
+
+        while (1) {
+
+            uint16_t y, dy;
+            dy = CAM_HEIGHT / CAM_DIV;
+
+            for (y = 0; y < CAM_HEIGHT; y += dy) {
+
+                getLines(y + 1, &camData[offset], dy);
+
+                uint8_t parts = (data_size % PACKET_SIZE == 0) ? (data_size / PACKET_SIZE) - 1 : (data_size / PACKET_SIZE);
+
+                for (uint8_t part = 0; part <= parts; part++) {
+
+                    for (int i = 0; i < SEND_BUFFER_SIZE; i++) {
+                        tx_buffer[i] = 0;
+                    }
+
+                    tx_buffer[0] = part; //tera << 3;
+                    tx_buffer[1] = parts; // << 3;
+
+                    if (part == parts) {
+                        memcpy(tx_buffer + 2, (camData + (part * (data_size % PACKET_SIZE))), (data_size % PACKET_SIZE));
+                    } else {
+                        memcpy(tx_buffer + 2, (camData + (part * PACKET_SIZE)), PACKET_SIZE);
+                    }
+
+                    int err = sendto(sock, &tx_buffer, sizeof(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
+
+                    if (err < 0) {
+                        ESP_LOGE(TASK_TAG, "Error occured during sending video frame: errno %d size %d", err, data_size);
+                        break;
+                    }
+                    vTaskDelay(50 / portTICK_PERIOD_MS);
+                }
+
+                ESP_LOGI(TASK_TAG, "Message task! camera, packets: %d", parts);
+            }
+
+            ESP_LOGI(TASK_TAG, "Grootte: %d", data_size);
+
+            // transmit every 5 seconds
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        }
+
+        if (sock != -1) {
+            ESP_LOGE(TASK_TAG, "Shutting down socket and restarting after 10 seconds...");
+            shutdown(sock, 0);
+            close(sock);
+            vTaskDelay(10000 / portTICK_PERIOD_MS);
+        }
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
+/**
+ * @TODO:
+ *
+ * @param http_ctx
+ * @param ctx
+ */
 void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
 {
 #ifdef USE_BMP_HEADER
@@ -204,6 +302,12 @@ void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
     http_response_end(http_ctx);
 }
 
+/**
+ * @TODO:
+ *
+ * @param http_ctx
+ * @param ctx
+ */
 void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
 {
     http_response_begin(http_ctx, 200, STREAM_CONTENT_TYPE, HTTP_RESPONSE_SIZE_UNKNOWN);

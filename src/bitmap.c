@@ -1,5 +1,12 @@
 #include <bitmap.h>
 
+/**
+ * @sets the header of the bitmap image
+ * 
+ * @param w 
+ * @param h 
+ * @return bitmap_header_t* 
+ */
 bitmap_header_t* bmp_create_header(int w, int h)
 {
     bitmap_header_t* pbitmap = (bitmap_header_t*)calloc(1, sizeof(bitmap_header_t));

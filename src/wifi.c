@@ -7,12 +7,11 @@ const int AP_STARTED_BIT = BIT2;
 static const char* TAG = "Wifi";
 
 /**
- * Handle events triggerd by the ESPs RTOS system. Called automatically on event
- *
- * @param  system_event_t *event
- * @param  void *ctx
+ * @Handle events triggerd by the ESPs RTOS system. Called automatically on event
  * 
- * @return esp_err_t ESP_OK to be used in ESP_ERROR_CHECK
+ * @param ctx 
+ * @param event 
+ * @return esp_err_t 
  */
 esp_err_t event_handler(void* ctx, system_event_t* event)
 {
@@ -45,10 +44,9 @@ esp_err_t event_handler(void* ctx, system_event_t* event)
 }
 
 /**
- * Initialize a Wi-Fi Access Point
- * Parameters can be changed in the ESP_WIFI_ and AP_ defines
- *
- * @return void
+ * @Initialize a Wi-Fi Access Point
+ * @Parameters can be changed in the ESP_WIFI_ and AP_ defines
+ * 
  */
 void wifi_init()
 {
@@ -82,9 +80,8 @@ void wifi_init()
 }
 
 /**
- * Print a list of stations connected to the Access Point
- *
- * @return void
+ * @Print a list of stations connected to the Access Point
+ * 
  */
 void printStationList()
 {
@@ -112,9 +109,8 @@ void printStationList()
 }
 
 /**
- * Initialization and start of DHCP server on 192.168.1.1
- *
- * @return void
+ * @Initialization and start of DHCP server on 192.168.1.1
+ * 
  */
 void start_dhcp_server()
 {
@@ -134,10 +130,9 @@ void start_dhcp_server()
 }
 
 /**
- * Print connection information of a station 
- *
- * @param  void *
- * @return void
+ * @Print connection information of a station 
+ * 
+ * @param pvParam 
  */
 void print_sta_info(void* pvParam)
 {

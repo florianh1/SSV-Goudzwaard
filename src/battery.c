@@ -6,9 +6,9 @@ extern SemaphoreHandle_t batteryPercentageSemaphore;
 extern uint8_t battery_percentage;
 
 /**
- * battery percentage transmit task
- *
- * @return void
+ * @task thats takes care of the different battery functionalities in the SSV GoudZwaard
+ * 
+ * @param pvParameter 
  */
 void battery_percentage_transmit_task(void* pvParameter)
 {

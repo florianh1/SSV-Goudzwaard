@@ -1,9 +1,9 @@
 #include <blink.h>
 
 /**
- * Blink task
- *
- * @return void
+ * @Blinks a led to see if the ESP32 is still running
+ * 
+ * @param pvParameter 
  */
 void blink_task(void* pvParameter)
 {
