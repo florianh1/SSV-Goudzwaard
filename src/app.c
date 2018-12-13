@@ -33,6 +33,7 @@ uint8_t scrollbar = 0;
 uint8_t battery_percentage = 94;
 
 extern EventGroupHandle_t wifi_event_group;
+extern const int CLIENT_CONNECTED_BIT;
 
 /**
  * @Initialization of Non-Volitile Storage
@@ -103,11 +104,18 @@ void app_main()
     start_dhcp_server();
     wifi_init();
 
+    /* Wait for the callback to set the CONNECTED_BIT in the
+       event group.
+    */
+    xEventGroupWaitBits(wifi_event_group, CLIENT_CONNECTED_BIT, false, true, portMAX_DELAY);
+
+    ESP_LOGI(APP_MAIN_TAG, "Device connected, starting tasks!");
+
     xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, NULL);
 
-    xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&receive_control_task, "receive_control_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&motor_task, "motor_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
+    // xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(&receive_control_task, "receive_control_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(&motor_task, "motor_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(&print_sta_info, "print_sta_info", 4096, NULL, 5, NULL);
 }

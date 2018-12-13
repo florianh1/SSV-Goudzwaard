@@ -231,13 +231,26 @@ void camera_task(void* pvParameter)
                         tx_buffer[i] = 0;
                     }
 
-                    tx_buffer[0] = part << 3;
-                    tx_buffer[1] = parts << 3;
+                    tx_buffer[0] = part; //tera << 3;
+                    tx_buffer[1] = parts; // << 3;
 
                     if (part == parts) {
                         memcpy(tx_buffer + 2, (camData + (part * (data_size % PACKET_SIZE))), (data_size % PACKET_SIZE));
                     } else {
                         memcpy(tx_buffer + 2, (camData + (part * PACKET_SIZE)), PACKET_SIZE);
+                    }
+
+                    for (int a = 2; a < 2000; a++) {
+                        if (a % 4 == 0) {
+
+                            tx_buffer[a] = 0xF8;
+                            a++;
+                            tx_buffer[a] = 0;
+                        } else {
+                            tx_buffer[a] = 0;
+                            a++;
+                            tx_buffer[a] = 0x1F;
+                        }
                     }
 
                     int err = sendto(sock, &tx_buffer, sizeof(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
@@ -246,13 +259,16 @@ void camera_task(void* pvParameter)
                         ESP_LOGE(TASK_TAG, "Error occured during sending video frame: errno %d size %d", err, data_size);
                         break;
                     }
+                    vTaskDelay(50 / portTICK_PERIOD_MS);
                 }
+
+                ESP_LOGI(TASK_TAG, "Message task! camera, packets: %d", parts);
             }
 
-            ESP_LOGI(TASK_TAG, "Message task! camera");
+            ESP_LOGI(TASK_TAG, "Grootte: %d", data_size);
 
             // transmit every 5 seconds
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
 
         if (sock != -1) {
