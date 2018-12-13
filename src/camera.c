@@ -240,19 +240,6 @@ void camera_task(void* pvParameter)
                         memcpy(tx_buffer + 2, (camData + (part * PACKET_SIZE)), PACKET_SIZE);
                     }
 
-                    for (int a = 2; a < 2000; a++) {
-                        if (a % 4 == 0) {
-
-                            tx_buffer[a] = 0xF8;
-                            a++;
-                            tx_buffer[a] = 0;
-                        } else {
-                            tx_buffer[a] = 0;
-                            a++;
-                            tx_buffer[a] = 0x1F;
-                        }
-                    }
-
                     int err = sendto(sock, &tx_buffer, sizeof(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
 
                     if (err < 0) {
