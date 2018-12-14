@@ -63,19 +63,6 @@ camera_config_t cam_conf = {
 //  PWDN    --> GND
 //  HREF    --> NC
 
-uint8_t v_gain = 0;
-uint8_t v_awbb = 0;
-uint8_t v_awbr = 0;
-uint8_t v_awbg = 0;
-uint16_t v_aec = 0;
-int8_t v_bright = 0;
-uint8_t v_cnt = 0;
-uint16_t v_hstart = 0;
-uint16_t v_vstart = 0;
-bool b_agc = false;
-bool b_awb = false;
-bool b_aec = false;
-
 uint8_t* camData;
 uint16_t data_size;
 uint16_t line_size;
@@ -87,7 +74,7 @@ uint16_t line_h;
 #define OP_CLOSE 0x88
 #define OP_PING 0x89
 #define OP_PONG 0x8A
-#define WS_MASK 0x80;
+#define WS_MASK 0x80
 
 // static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=123456789000000000000987654321";
 
@@ -158,17 +145,6 @@ void camera_task(void* pvParameter)
 
     ESP_LOGI(TASK_TAG, "cam MID = %X\n\r", getMID());
     ESP_LOGI(TASK_TAG, "cam PID = %X\n\r", getPID());
-
-    v_gain = getGain();
-    v_awbb = rdReg(REG_BLUE);
-    v_awbr = rdReg(REG_RED);
-    v_bright = getBright();
-    v_cnt = getContrast();
-    v_hstart = getHStart();
-    v_vstart = getVStart();
-    b_agc = getAGC();
-    b_awb = getAWB();
-    b_aec = getAEC();
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
