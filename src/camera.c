@@ -89,9 +89,9 @@ uint16_t line_h;
 #define OP_PONG 0x8A
 #define WS_MASK 0x80;
 
-static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=123456789000000000000987654321";
+// static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=123456789000000000000987654321";
 
-static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
+// static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
 
 /**
  * @TODO:
@@ -102,7 +102,7 @@ static const char* STREAM_BOUNDARY = "--123456789000000000000987654321";
  */
 bool allocateMemory(uint16_t w, uint16_t h)
 {
-    
+
 #ifdef CONVERT_RGB565_TO_RGB332
     line_h = h;
     line_size = w;
@@ -112,7 +112,7 @@ bool allocateMemory(uint16_t w, uint16_t h)
     line_size = w * 2;
     data_size = 2 + line_size * h;
 #endif // CONVERT_RGB565_TO_RGB332
-    camData = (uint8_t*)malloc(data_size);
+    camData = (uint8_t*)malloc(data_size + 2);
     if (camData == NULL) {
         ESP_LOGI("allocateMemory", "******** Memory allocate Error! ***********");
         return false;
@@ -121,21 +121,21 @@ bool allocateMemory(uint16_t w, uint16_t h)
     return true;
 }
 
-/**
- * @TODO:
- *
- * @param http_ctx
- * @return esp_err_t
- */
-static esp_err_t write_frame(http_context_t http_ctx)
-{
-    http_buffer_t fb_data = {
-        .data = camData,
-        .size = data_size,
-        .data_is_persistent = true
-    };
-    return http_response_write(http_ctx, &fb_data);
-}
+// /**
+//  * @TODO:
+//  *
+//  * @param http_ctx
+//  * @return esp_err_t
+//  */
+// static esp_err_t write_frame(http_context_t http_ctx)
+// {
+//     http_buffer_t fb_data = {
+//         .data = camData,
+//         .size = data_size,
+//         .data_is_persistent = true
+//     };
+//     return http_response_write(http_ctx, &fb_data);
+// }
 
 /**
  * @TODO:
@@ -183,14 +183,14 @@ void camera_task(void* pvParameter)
 
     allocateMemory(CAM_WIDTH, (CAM_HEIGHT / CAM_DIV));
 
-    char tx_buffer[SEND_BUFFER_SIZE];
+    // char tx_buffer[SEND_BUFFER_SIZE];
     char addr_str[128];
     int addr_family;
     int ip_protocol;
 
     while (1) {
         struct sockaddr_in destAddr;
-        destAddr.sin_addr.s_addr = inet_addr("192.168.1.2"); //TODO: set correct address addres is most of time 192.168.1.2
+        destAddr.sin_addr.s_addr = inet_addr("192.168.1.255");
         destAddr.sin_family = AF_INET;
         destAddr.sin_port = htons(5000);
         addr_family = AF_INET;
@@ -211,41 +211,57 @@ void camera_task(void* pvParameter)
 
             for (y = 0; y < CAM_HEIGHT; y += dy) {
 
-                getLines(y + 1, &camData[0], dy);
+                getLines(y + 1, &camData[2], dy);
 
                 uint8_t parts = (data_size % PACKET_SIZE == 0) ? (data_size / PACKET_SIZE) - 1 : (data_size / PACKET_SIZE);
 
                 for (uint8_t part = 0; part <= parts; part++) {
 
-                    for (int i = 0; i < SEND_BUFFER_SIZE; i++) {
-                        tx_buffer[i] = 0;
-                    }
+                    // for (int i = 0; i < SEND_BUFFER_SIZE; i++) {
+                    //     tx_buffer[i] = 0;
+                    // }
 
-                    tx_buffer[0] = part; //tera << 3;
-                    tx_buffer[1] = parts; // << 3;
+                    // tx_buffer[0] = part; //tera << 3;
+                    // tx_buffer[1] = parts; // << 3;
+
+                    // if (part == parts) {
+                    //     memcpy(tx_buffer + 2, (camData + (part * (data_size % PACKET_SIZE))), (data_size % PACKET_SIZE));
+                    // } else {
+                    //     memcpy(tx_buffer + 2, (camData + (part * PACKET_SIZE)), PACKET_SIZE);
+                    // }
+
+                    int startPos = part * PACKET_SIZE;
+
+                    if (part != 0)
+                        startPos -= 2;
+
+                    int length;
+
+                    camData[startPos] = part;
+                    camData[startPos + 1] = parts;
 
                     if (part == parts) {
-                        memcpy(tx_buffer + 2, (camData + (part * (data_size % PACKET_SIZE))), (data_size % PACKET_SIZE));
+                        length = data_size % PACKET_SIZE;
                     } else {
-                        memcpy(tx_buffer + 2, (camData + (part * PACKET_SIZE)), PACKET_SIZE);
+                        length = PACKET_SIZE;
                     }
 
-                    int err = sendto(sock, &tx_buffer, sizeof(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
+                    int err = sendto(sock, &camData[startPos], length + 2, 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
 
                     if (err < 0) {
                         ESP_LOGE(TASK_TAG, "Error occured during sending video frame: errno %d size %d", err, data_size);
                         break;
                     }
-                    vTaskDelay(50 / portTICK_PERIOD_MS);
                 }
 
                 ESP_LOGI(TASK_TAG, "Message task! camera, packets: %d", parts);
+                vTaskDelay(50 / portTICK_PERIOD_MS);
             }
 
             ESP_LOGI(TASK_TAG, "Grootte: %d", data_size);
 
             // transmit every 5 seconds
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            vTaskDelay(250 / portTICK_PERIOD_MS);
         }
 
         if (sock != -1) {
@@ -258,94 +274,94 @@ void camera_task(void* pvParameter)
     }
 }
 
-/**
- * @TODO:
- *
- * @param http_ctx
- * @param ctx
- */
-void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
-{
-#ifdef USE_BMP_HEADER
-    bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
+// /**
+//  * @TODO:
+//  *
+//  * @param http_ctx
+//  * @param ctx
+//  */
+// void handle_rgb_bmp(http_context_t http_ctx, void* ctx)
+// {
+// #ifdef USE_BMP_HEADER
+//     bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
 
-    if (header == NULL) {
-        return;
-    }
+//     if (header == NULL) {
+//         return;
+//     }
 
-    http_response_begin(http_ctx, 200, "image/bmp", sizeof(*header) + data_size * CAM_DIV);
-    http_buffer_t bmp_header = {
-        .data = header,
-        .size = sizeof(*header)
-    };
-    http_response_set_header(http_ctx, "Content-disposition", "inline; filename=capture.bmp");
+//     http_response_begin(http_ctx, 200, "image/bmp", sizeof(*header) + data_size * CAM_DIV);
+//     http_buffer_t bmp_header = {
+//         .data = header,
+//         .size = sizeof(*header)
+//     };
+//     http_response_set_header(http_ctx, "Content-disposition", "inline; filename=capture.bmp");
 
-    http_response_write(http_ctx, &bmp_header);
-#endif
+//     http_response_write(http_ctx, &bmp_header);
+// #endif
 
-    uint16_t y, dy;
-    dy = CAM_HEIGHT / CAM_DIV;
+//     uint16_t y, dy;
+//     dy = CAM_HEIGHT / CAM_DIV;
 
-    for (y = 0; y < CAM_HEIGHT; y += dy) {
-        getLines(y + 1, &camData[0], dy);
-        write_frame(http_ctx);
-    }
-#ifdef USE_BMP_HEADER
-    free(header);
-#endif
+//     for (y = 0; y < CAM_HEIGHT; y += dy) {
+//         getLines(y + 1, &camData[0], dy);
+//         write_frame(http_ctx);
+//     }
+// #ifdef USE_BMP_HEADER
+//     free(header);
+// #endif
 
-    http_response_end(http_ctx);
-}
+//     http_response_end(http_ctx);
+// }
 
-/**
- * @TODO:
- *
- * @param http_ctx
- * @param ctx
- */
-void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
-{
-    http_response_begin(http_ctx, 200, STREAM_CONTENT_TYPE, HTTP_RESPONSE_SIZE_UNKNOWN);
+// /**
+//  * @TODO:
+//  *
+//  * @param http_ctx
+//  * @param ctx
+//  */
+// void handle_rgb_bmp_stream(http_context_t http_ctx, void* ctx)
+// {
+//     http_response_begin(http_ctx, 200, STREAM_CONTENT_TYPE, HTTP_RESPONSE_SIZE_UNKNOWN);
 
-    bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
-    if (header == NULL) {
-        return;
-    }
-    http_buffer_t bmp_header = {
-        .data = header,
-        .size = sizeof(*header)
-    };
+//     bitmap_header_t* header = bmp_create_header(CAM_WIDTH, CAM_HEIGHT);
+//     if (header == NULL) {
+//         return;
+//     }
+//     http_buffer_t bmp_header = {
+//         .data = header,
+//         .size = sizeof(*header)
+//     };
 
-    while (true) {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        esp_err_t err = http_response_begin_multipart(http_ctx, "image/bitmap",
-            data_size + sizeof(*header));
-        if (err != ESP_OK) {
-            break;
-        }
-        err = http_response_write(http_ctx, &bmp_header);
-        if (err != ESP_OK) {
-            break;
-        }
+//     while (true) {
+//         vTaskDelay(1000 / portTICK_PERIOD_MS);
+//         esp_err_t err = http_response_begin_multipart(http_ctx, "image/bitmap",
+//             data_size + sizeof(*header));
+//         if (err != ESP_OK) {
+//             break;
+//         }
+//         err = http_response_write(http_ctx, &bmp_header);
+//         if (err != ESP_OK) {
+//             break;
+//         }
 
-        uint16_t y, dy;
-        dy = CAM_HEIGHT / CAM_DIV;
+//         uint16_t y, dy;
+//         dy = CAM_HEIGHT / CAM_DIV;
 
-        for (y = 0; y < CAM_HEIGHT; y += dy) {
-            getLines(y + 1, &camData[0], dy);
+//         for (y = 0; y < CAM_HEIGHT; y += dy) {
+//             getLines(y + 1, &camData[0], dy);
 
-            err = write_frame(http_ctx);
-            if (err != ESP_OK) {
-                break;
-            }
-        }
+//             err = write_frame(http_ctx);
+//             if (err != ESP_OK) {
+//                 break;
+//             }
+//         }
 
-        err = http_response_end_multipart(http_ctx, STREAM_BOUNDARY);
-        if (err != ESP_OK) {
-            break;
-        }
-    }
+//         err = http_response_end_multipart(http_ctx, STREAM_BOUNDARY);
+//         if (err != ESP_OK) {
+//             break;
+//         }
+//     }
 
-    free(header);
-    http_response_end(http_ctx);
-}
+//     free(header);
+//     http_response_end(http_ctx);
+// }
