@@ -5,6 +5,8 @@ extern SemaphoreHandle_t batteryPercentageSemaphore;
 
 extern uint8_t battery_percentage;
 
+uint8_t calc_average_battery_percentage();
+
 /**
  * @task thats takes care of the different battery functionalities in the SSV GoudZwaard
  * 
@@ -44,7 +46,7 @@ void battery_percentage_transmit_task(void* pvParameter)
         ESP_LOGI(TASK_TAG, "Socket created");
 
         while (1) {
-            battery_percentage = (adc1_get_raw(BATTERY_CELL_1) + adc1_get_raw(BATTERY_CELL_2) + adc1_get_raw(BATTERY_CELL_3)) / 3;
+            battery_percentage = calc_average_battery_percentage();
 
             sprintf(tx_buffer, "%d", battery_percentage);
             int err = sendto(sock, &tx_buffer, strlen(tx_buffer), 0, (struct sockaddr*)&destAddr, sizeof(destAddr));
@@ -69,4 +71,30 @@ void battery_percentage_transmit_task(void* pvParameter)
         }
     }
     vTaskDelete(NULL);
+}
+
+/**
+ * Calculate the average battery percentage based on the 3 cells in the battery.
+ *
+ * @return uint8_t
+ */
+uint8_t calc_average_battery_percentage() {
+    int cell_1_value = adc1_get_raw(BATTERY_CELL_1);
+    int cell_2_value = adc1_get_raw(BATTERY_CELL_2);
+    int cell_3_value = adc1_get_raw(BATTERY_CELL_3);
+    int cell_value = 0;
+
+    // The lowest cell value should be used because when a cell value
+    // reaches 0 the battery could die. Therefore the battery percentage
+    // should be calculated using the lowest cell value.
+    if (cell_1_value > cell_2_value && cell_1_value > cell_3_value) {
+        cell_value = cell_1_value;
+    } else if (cell_2_value > cell_1_value && cell_2_value > cell_3_value) {
+        cell_value = cell_2_value;
+    } else if (cell_3_value > cell_1_value && cell_3_value > cell_2_value) {
+        cell_value = cell_3_value;
+    }
+
+    // Since we read a 10 bit value from adc, the maximum value will be 1024.
+    return (uint8_t) ((cell_value / 1024) * 100);
 }
