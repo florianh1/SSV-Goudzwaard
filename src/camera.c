@@ -35,8 +35,8 @@
 #define CAM_DIV 1
 #endif
 
-#define PACKET_SIZE 2000
-#define SEND_BUFFER_SIZE 2048
+#define PACKET_SIZE 1000
+#define SEND_BUFFER_SIZE 1024
 
 //******************************************
 
