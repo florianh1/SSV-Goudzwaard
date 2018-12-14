@@ -33,6 +33,8 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
+#include <settings.h>
+
 typedef struct {
     int D0; /*!< GPIO pin for camera D0 line */
     int D1; /*!< GPIO pin for camera D1 line */
@@ -55,6 +57,10 @@ typedef struct {
 } camera_config_t;
 
 esp_err_t I2S_camera_init(camera_config_t* config);
+#ifdef CONVERT_RGB565_TO_RGB332
+uint8_t* camera_getLine(uint16_t lineno);
+#else
 uint16_t* camera_getLine(uint16_t lineno);
+#endif // CONVERT_RGB565_TO_RGB332
 
 #endif //_I2SCAMERA_H_
