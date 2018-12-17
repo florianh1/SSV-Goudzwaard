@@ -29,7 +29,7 @@ void motor_task(void* arg)
     esp_log_level_set("motor_task", ESP_LOG_ERROR);
 
     //1. mcpwm gpio initialization
-    ESP_LOGE(TASK_TAG, "Initializing MCPWM pins...");
+    ESP_LOGI(TASK_TAG, "Initializing MCPWM pins...");
     MCPWMinit();
 
     //2. initial mcpwm configuration

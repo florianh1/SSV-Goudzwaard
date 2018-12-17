@@ -45,7 +45,7 @@ extern uint8_t number_of_devices_connected;
 
 /**
  * @Initialization of Non-Volitile Storage
- * 
+ *
  */
 void nvs_init()
 {
@@ -61,7 +61,7 @@ void nvs_init()
 
 /**
  * @main loop
- * 
+ *
  */
 void app_main()
 {
