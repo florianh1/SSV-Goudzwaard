@@ -60,9 +60,10 @@ void emptyTank()
     static const char* TASK_TAG = "emptyTank";
     ESP_LOGI(TASK_TAG, "emptying the balasttank...");
     while (waterML > 0) {
-        ESP_LOGI(TASK_TAG, "Emptying tank: Tank volume: %d", waterML);
+        ESP_LOGW(TASK_TAG, "Emptying tank: Tank volume: %d", waterML);
         turnStepper(PUSH);
         waterML--;
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -89,8 +90,7 @@ void control_syringe_task(void* pvParameter)
                 turnStepper(PULL);
                 waterML++;
             } else {
-                // vTaskDelay(500 / portTICK_PERIOD_MS);
-                // syringeStop();
+                vTaskDelay(500 / portTICK_PERIOD_MS);
             }
             ESP_LOGI(TASK_TAG, "scrollbar = %d || waterML = %d", scrollbar, waterML);
         }
