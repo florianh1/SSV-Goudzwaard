@@ -1,6 +1,8 @@
 
 #include <battery.h>
 
+#define BATTERY_DEMOVALLUE
+
 extern SemaphoreHandle_t batteryPercentageSemaphore;
 
 extern uint8_t battery_percentage;
@@ -31,7 +33,7 @@ void battery_percentage_transmit_task(void* pvParameter)
 
     while (1) {
         struct sockaddr_in destAddr;
-        destAddr.sin_addr.s_addr = inet_addr("192.168.1.2"); //TODO: set correct address addres is most of time 192.168.1.2
+        destAddr.sin_addr.s_addr = inet_addr("192.168.1.255");
         destAddr.sin_family = AF_INET;
         destAddr.sin_port = htons(TRANSMIT_BATTERY_PERCENTAGE_UDP_PORT);
         addr_family = AF_INET;
@@ -58,9 +60,6 @@ void battery_percentage_transmit_task(void* pvParameter)
 
             // transmit every 10 seconds
             vTaskDelay(1000 / portTICK_PERIOD_MS);
-            if (battery_percentage < 5) {
-                emptyTank();
-            }
         }
 
         if (sock != -1) {
@@ -78,7 +77,8 @@ void battery_percentage_transmit_task(void* pvParameter)
  *
  * @return uint8_t
  */
-uint8_t calc_average_battery_percentage() {
+uint8_t calc_average_battery_percentage()
+{
     int cell_1_value = adc1_get_raw(BATTERY_CELL_1);
     int cell_2_value = adc1_get_raw(BATTERY_CELL_2);
     int cell_3_value = adc1_get_raw(BATTERY_CELL_3);
@@ -95,6 +95,10 @@ uint8_t calc_average_battery_percentage() {
         cell_value = cell_3_value;
     }
 
+#ifdef BATTERY_DEMOVALLUE
+    return 94;
+#else
     // Since we read a 10 bit value from adc, the maximum value will be 1024.
-    return (uint8_t) ((cell_value / 1024) * 100);
+    return (uint8_t)((cell_value / 1024) * 100);
+#endif
 }

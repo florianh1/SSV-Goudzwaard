@@ -113,23 +113,25 @@ void app_main()
     wifi_init();
 
     xTaskCreate(&print_sta_info, "print_sta_info", 2048, NULL, 10, NULL);
+
     /* Wait for the callback to set the CONNECTED_BIT in the
        event group.
     */
+
     xEventGroupWaitBits(wifi_event_group, CLIENT_CONNECTED_BIT, false, true, portMAX_DELAY);
     ESP_LOGI(APP_MAIN_TAG, "Device connected, starting tasks!");
 
     // start the tasks
-    // xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, &camera_task_handler);
+    xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, &camera_task_handler);
     xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 2048, NULL, 5, &battery_percentage_transmit_task_handler);
     xTaskCreate(&receive_control_task, "receive_control_task", 2048, NULL, 5, &receive_control_task_handler);
-    // xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, &control_syringe_task_handler);
+    xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, &control_syringe_task_handler);
     xTaskCreate(&motor_task, "motor_task", 2048, NULL, 5, &motor_task_handler);
 
     while (1) {
         ESP_LOGI(APP_MAIN_TAG, "Number of connected devices: %d", number_of_devices_connected);
 
-        if (!(number_of_devices_connected > 0)) {
+        if ((!(number_of_devices_connected > 0)) || (battery_percentage < 5)) {
             // stop the tasks
 
             if (blink_task_handler != NULL) {
@@ -164,6 +166,7 @@ void app_main()
                 if (eTaskGetState(control_syringe_task_handler) != eSuspended) {
                     ESP_LOGI(APP_MAIN_TAG, "Suspending control syringe task");
                     vTaskSuspend(control_syringe_task_handler);
+                    emptyTank();
                 }
             }
 
