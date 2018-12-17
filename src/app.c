@@ -37,6 +37,7 @@ TaskHandle_t battery_percentage_transmit_task_handler = NULL;
 TaskHandle_t receive_control_task_handler = NULL;
 TaskHandle_t control_syringe_task_handler = NULL;
 TaskHandle_t motor_task_handler = NULL;
+TaskHandle_t blink_task_handler = NULL;
 
 extern EventGroupHandle_t wifi_event_group;
 extern const int CLIENT_CONNECTED_BIT;
@@ -111,7 +112,7 @@ void app_main()
     start_dhcp_server();
     wifi_init();
 
-    xTaskCreate(&print_sta_info, "print_sta_info", 2048, NULL, 5, NULL);
+    xTaskCreate(&print_sta_info, "print_sta_info", 2048, NULL, 10, NULL);
     /* Wait for the callback to set the CONNECTED_BIT in the
        event group.
     */
@@ -119,8 +120,7 @@ void app_main()
     ESP_LOGI(APP_MAIN_TAG, "Device connected, starting tasks!");
 
     // start the tasks
-
-    xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, &camera_task_handler);
+    // xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, &camera_task_handler);
     xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 2048, NULL, 5, &battery_percentage_transmit_task_handler);
     xTaskCreate(&receive_control_task, "receive_control_task", 2048, NULL, 5, &receive_control_task_handler);
     // xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, &control_syringe_task_handler);
@@ -128,52 +128,98 @@ void app_main()
 
     while (1) {
         ESP_LOGI(APP_MAIN_TAG, "Number of connected devices: %d", number_of_devices_connected);
+
         if (!(number_of_devices_connected > 0)) {
             // stop the tasks
 
+            if (blink_task_handler != NULL) {
+                if (eTaskGetState(blink_task_handler) != eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Suspending blink_task");
+                    vTaskSuspend(blink_task_handler);
+                }
+            }
+
             if (camera_task_handler != NULL) {
-                vTaskSuspend(camera_task_handler);
+                if (eTaskGetState(camera_task_handler) != eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Suspending camera task");
+                    vTaskSuspend(camera_task_handler);
+                }
             }
 
             if (battery_percentage_transmit_task_handler != NULL) {
-                vTaskSuspend(battery_percentage_transmit_task_handler);
+                if (eTaskGetState(battery_percentage_transmit_task_handler) != eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Suspending battery transmit task");
+                    vTaskSuspend(battery_percentage_transmit_task_handler);
+                }
             }
 
             if (receive_control_task_handler != NULL) {
-                vTaskSuspend(receive_control_task_handler);
+                if (eTaskGetState(receive_control_task_handler) != eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Suspending receive control task");
+                    vTaskSuspend(receive_control_task_handler);
+                }
             }
 
             if (control_syringe_task_handler != NULL) {
-                vTaskSuspend(control_syringe_task_handler);
+                if (eTaskGetState(control_syringe_task_handler) != eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Suspending control syringe task");
+                    vTaskSuspend(control_syringe_task_handler);
+                }
             }
 
             if (motor_task_handler != NULL) {
-                vTaskSuspend(motor_task_handler);
+                if (eTaskGetState(motor_task_handler) != eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Suspending motor control task");
+                    vTaskSuspend(motor_task_handler);
+                }
             }
-
         } else {
-            // start the tasks
-            if (camera_task_handler == NULL) {
-                vTaskResume(&camera_task, "camera_task", 4096 * 2, NULL, 5, &camera_task_handler);
+            // continue the tasks
+
+            if (blink_task_handler != NULL) {
+                if (eTaskGetState(blink_task_handler) == eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Continuing blink_task");
+                    vTaskResume(blink_task_handler);
+                }
             }
 
-            if (battery_percentage_transmit_task_handler == NULL) {
-                vTaskResume(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 2048, NULL, 5, &battery_percentage_transmit_task_handler);
+            if (camera_task_handler != NULL) {
+                if (eTaskGetState(camera_task_handler) == eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Continuing camera task");
+                    vTaskResume(camera_task_handler);
+                }
             }
 
-            if (receive_control_task_handler == NULL) {
-                vTaskResume(&receive_control_task, "receive_control_task", 2048, NULL, 5, &receive_control_task_handler);
+            if (battery_percentage_transmit_task_handler != NULL) {
+                if (eTaskGetState(battery_percentage_transmit_task_handler) == eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Continuing battery transmit task");
+                    vTaskResume(battery_percentage_transmit_task_handler);
+                }
             }
 
-            if (control_syringe_task_handler == NULL) {
-                // vTaskResume(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, &control_syringe_task_handler);
+            if (receive_control_task_handler != NULL) {
+                if (eTaskGetState(receive_control_task_handler) == eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Continuing receive control task");
+                    vTaskResume(receive_control_task_handler);
+                }
             }
 
-            if (motor_task_handler == NULL) {
-                vTaskResume(&motor_task, "motor_task", 2048, NULL, 5, &motor_task_handler);
+            if (control_syringe_task_handler != NULL) {
+                if (eTaskGetState(control_syringe_task_handler) == eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Continuing control syringe task");
+                    vTaskResume(control_syringe_task_handler);
+                }
+            }
+
+            if (motor_task_handler != NULL) {
+                if (eTaskGetState(motor_task_handler) == eSuspended) {
+                    ESP_LOGI(APP_MAIN_TAG, "Continuing motor control task");
+                    vTaskResume(motor_task_handler);
+                }
             }
         }
-        // Delay 5 seconds
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+
+        // Delay 1 seconds
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
