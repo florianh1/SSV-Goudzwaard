@@ -6,6 +6,8 @@ const int AP_STARTED_BIT = BIT2;
 
 static const char* TAG = "Wifi";
 
+uint8_t number_of_devices_connected = 0;
+
 /**
  * @Handle events triggerd by the ESPs RTOS system. Called automatically on event
  * 
@@ -23,14 +25,16 @@ esp_err_t event_handler(void* ctx, system_event_t* event)
 
     case SYSTEM_EVENT_AP_STACONNECTED:
         printf("Event: station connected to AP\n");
+        number_of_devices_connected++;
         xEventGroupSetBits(wifi_event_group, CLIENT_CONNECTED_BIT);
         break;
 
     case SYSTEM_EVENT_AP_STADISCONNECTED:
         printf("Event: station disconnected from AP\n");
         xEventGroupSetBits(wifi_event_group, CLIENT_DISCONNECTED_BIT);
+        number_of_devices_connected--;
         vTaskDelay(5000);
-        if (event->event_id == SYSTEM_EVENT_AP_STADISCONNECTED) {
+        if (number_of_devices_connected == 0) {
             emptyTank();
         }
         break;
