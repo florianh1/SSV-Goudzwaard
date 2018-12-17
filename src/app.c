@@ -42,6 +42,7 @@ TaskHandle_t blink_task_handler = NULL;
 extern EventGroupHandle_t wifi_event_group;
 extern const int CLIENT_CONNECTED_BIT;
 extern uint8_t number_of_devices_connected;
+extern uint8_t waterML;
 
 /**
  * @Initialization of Non-Volitile Storage
@@ -162,20 +163,24 @@ void app_main()
                 }
             }
 
-            if (control_syringe_task_handler != NULL) {
-                if (eTaskGetState(control_syringe_task_handler) != eSuspended) {
-                    ESP_LOGI(APP_MAIN_TAG, "Suspending control syringe task");
-                    vTaskSuspend(control_syringe_task_handler);
-                    emptyTank();
-                }
-            }
-
             if (motor_task_handler != NULL) {
                 if (eTaskGetState(motor_task_handler) != eSuspended) {
                     ESP_LOGI(APP_MAIN_TAG, "Suspending motor control task");
                     vTaskSuspend(motor_task_handler);
                 }
             }
+
+            // move submarine to surface
+            scrollbar = 0;
+            if (waterML == 0) {
+                if (control_syringe_task != NULL) {
+                    if (eTaskGetState(control_syringe_task) != eSuspended) {
+                        ESP_LOGI(APP_MAIN_TAG, "Suspending control syringe task");
+                        vTaskSuspend(control_syringe_task);
+                    }
+                }
+            }
+
         } else {
             // continue the tasks
 
