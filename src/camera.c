@@ -62,23 +62,11 @@ camera_config_t cam_conf = {
 //  PWDN    --> GND
 //  HREF    --> NC
 
-uint8_t v_gain = 0;
-uint8_t v_awbb = 0;
-uint8_t v_awbr = 0;
-uint8_t v_awbg = 0;
-uint16_t v_aec = 0;
-int8_t v_bright = 0;
-uint8_t v_cnt = 0;
-uint16_t v_hstart = 0;
-uint16_t v_vstart = 0;
-bool b_agc = false;
-bool b_awb = false;
-bool b_aec = false;
-
 uint8_t* camData;
 uint16_t data_size;
 uint16_t line_size;
 uint16_t line_h;
+
 /**
  * @TODO:
  *

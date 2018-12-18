@@ -42,35 +42,13 @@ void setPCLK(uint8_t pre, uint8_t pll);
 void rewrCLKRC(void);
 void setHStart(uint16_t val);
 void setVStart(uint16_t val);
-uint16_t getHStart(void);
-uint16_t getVStart(void);
 
-uint16_t* getLine(uint16_t lineno);
 bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n);
-void getFrame(uint8_t* buf);
 
 uint16_t getMID(void);
 uint16_t getPID(void);
 void vflip(bool enable);
 void setColor(uint8_t color);
-void setGain(uint16_t val);
-uint16_t getGain(void);
-void setAGC(uint8_t val);
-bool getAGC(void);
-void setAWB(uint8_t val);
-bool getAWB(void);
-void setAEC(uint8_t val);
-bool getAEC(void);
-void setBright(int8_t val);
-int8_t getBright(void);
-void setContrast(uint8_t val);
-uint8_t getContrast(void);
-void setAWBB(uint8_t val);
-void setAWBR(uint8_t val);
-void setAWBG(uint8_t val);
-void setExposure(uint16_t val);
-void colorbar(bool on);
-void colorbar_super(bool on);
 
 void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed);
 

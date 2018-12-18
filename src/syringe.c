@@ -11,7 +11,9 @@ extern uint8_t scrollbar;
 
 #define GPIO_ON 1
 #define GPIO_OFF 0
-#define STEPPER_PINS ((1ULL << SYRINGE_IN1) | (1ULL << SYRINGE_IN2) | (1ULL << SYRINGE_IN3) | (1ULL << SYRINGE_IN4))
+#define PULL 0
+#define PUSH 1
+#define STEPPER_PINS ((1ULL << STEPPIN) | (1ULL << DIRPIN))
 #define MILLISECONDS(ms) (ms / portTICK_PERIOD_MS)
 #define STEPPER_DELAY MILLISECONDS(10) // 10ms
 
@@ -38,87 +40,15 @@ void init()
     gpio_config(&io_conf);
 }
 
-/**
- * @sets the syringe pins HIGH or LOW
- * 
- * @param state1 
- * @param state2 
- * @param state3 
- * @param state4 
- */
-void pinSet(int state1, int state2, int state3, int state4)
+void turnStepper(int dir)
 {
-    gpio_set_level(SYRINGE_IN1, state1);
-    gpio_set_level(SYRINGE_IN2, state2);
-    gpio_set_level(SYRINGE_IN3, state3);
-    gpio_set_level(SYRINGE_IN4, state4);
-}
-
-/**
- * @pushes approximately 1mL of water out of each syringe attached
- * 
- */
-void pushML()
-{
-    for (int i = 0; i < 56; i++) {
-        pinSet(GPIO_ON, GPIO_OFF, GPIO_OFF, GPIO_OFF);
-        ets_delay_us(1000);
-        pinSet(GPIO_ON, GPIO_ON, GPIO_OFF, GPIO_OFF);
-        ets_delay_us(1000);
-
-        pinSet(GPIO_OFF, GPIO_ON, GPIO_OFF, GPIO_OFF);
-        ets_delay_us(1000);
-        pinSet(GPIO_OFF, GPIO_ON, GPIO_ON, GPIO_OFF);
-        ets_delay_us(1000);
-
-        pinSet(GPIO_OFF, GPIO_OFF, GPIO_ON, GPIO_OFF);
-        ets_delay_us(1000);
-        pinSet(GPIO_OFF, GPIO_OFF, GPIO_ON, GPIO_ON);
-        ets_delay_us(1000);
-
-        pinSet(GPIO_OFF, GPIO_OFF, GPIO_OFF, GPIO_ON);
-        ets_delay_us(1000);
-        pinSet(GPIO_ON, GPIO_OFF, GPIO_OFF, GPIO_ON);
-        ets_delay_us(1000);
+    gpio_set_level(DIRPIN, dir);
+    for (int x = 0; x < 200; x++) {
+        gpio_set_level(STEPPIN, GPIO_ON);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+        gpio_set_level(STEPPIN, GPIO_OFF);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
-}
-
-/**
- * @pulls approximately 1mL of water out of each syringe attached
- * 
- */
-void pullML()
-{
-    for (int i = 0; i < 56; i++) {
-        pinSet(GPIO_ON, GPIO_OFF, GPIO_OFF, GPIO_ON);
-        ets_delay_us(1000);
-        pinSet(GPIO_OFF, GPIO_OFF, GPIO_OFF, GPIO_ON);
-        ets_delay_us(1000);
-
-        pinSet(GPIO_OFF, GPIO_OFF, GPIO_ON, GPIO_ON);
-        ets_delay_us(1000);
-        pinSet(GPIO_OFF, GPIO_OFF, GPIO_ON, GPIO_OFF);
-        ets_delay_us(1000);
-
-        pinSet(GPIO_OFF, GPIO_ON, GPIO_ON, GPIO_OFF);
-        ets_delay_us(1000);
-        pinSet(GPIO_OFF, GPIO_ON, GPIO_OFF, GPIO_OFF);
-        ets_delay_us(1000);
-
-        pinSet(GPIO_ON, GPIO_ON, GPIO_OFF, GPIO_OFF);
-        ets_delay_us(1000);
-        pinSet(GPIO_ON, GPIO_OFF, GPIO_OFF, GPIO_OFF);
-        ets_delay_us(1000);
-    }
-}
-
-/**
- * @sets all output pins of the syringes LOW
- * 
- */
-void syringeStop()
-{
-    pinSet(GPIO_OFF, GPIO_OFF, GPIO_OFF, GPIO_OFF);
 }
 
 /**
@@ -130,9 +60,10 @@ void emptyTank()
     static const char* TASK_TAG = "emptyTank";
     ESP_LOGI(TASK_TAG, "emptying the balasttank...");
     while (waterML > 0) {
-        ESP_LOGI(TASK_TAG, "Emptying tank: Tank volume: %d", waterML);
-        pushML();
+        ESP_LOGW(TASK_TAG, "Emptying tank: Tank volume: %d", waterML);
+        turnStepper(PUSH);
         waterML--;
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -147,19 +78,21 @@ void control_syringe_task(void* pvParameter)
     ESP_LOGI(TASK_TAG, "Syringe task started...");
     ESP_LOGI(TASK_TAG, "Initializing the scrollbar pins...");
     init();
-
     while (1) {
-        // if (scrollbarSemaphore != NULL) {
-        if (scrollbar < waterML) {
-            pushML();
-            waterML--;
-        } else if (scrollbar > waterML) {
-            pullML();
-            waterML++;
-        } else {
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-            syringeStop();
+        // turnStepper(PULL);
+        // turnStepper(PUSH);
+
+        if (scrollbarSemaphore != NULL) {
+            if (scrollbar < waterML) {
+                turnStepper(PUSH);
+                waterML--;
+            } else if (scrollbar > waterML) {
+                turnStepper(PULL);
+                waterML++;
+            } else {
+                vTaskDelay(500 / portTICK_PERIOD_MS);
+            }
+            ESP_LOGI(TASK_TAG, "scrollbar = %d || waterML = %d", scrollbar, waterML);
         }
-        // ESP_LOGI(TASK_TAG, "scrollbar = %d || waterML = %d", scrollbar, waterML);
     }
 }

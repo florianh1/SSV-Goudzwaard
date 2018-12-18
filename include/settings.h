@@ -9,7 +9,7 @@
 ******************************************************************************/
 
 /* Wi-Fi SSID, note a maximum character length of 32 */
-#define ESP_WIFI_SSID "SSV Goudzwaard"
+#define ESP_WIFI_SSID "Hendrikus"
 
 /* Wi-Fi password, note a minimum length of 8 and a maximum length of 64 characters */
 #define ESP_WIFI_PASS "12345678"
@@ -45,10 +45,14 @@
 #define CAMERA_SCL 22
 
 // Pins for syringe
-#define SYRINGE_IN1 12
-#define SYRINGE_IN2 15
-#define SYRINGE_IN3 16
-#define SYRINGE_IN4 17
+//for the LN driver
+// #define SYRINGE_IN1 12
+// #define SYRINGE_IN2 15
+// #define SYRINGE_IN3 16
+// #define SYRINGE_IN4 17
+//for the A4988 driver
+#define DIRPIN 12
+#define STEPPIN 15
 
 // Pins for controlling engines
 // Motor right

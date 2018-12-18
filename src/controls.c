@@ -1,5 +1,24 @@
 #include <controls.h>
 
+/**
+ * @macro for printing the binary value of the payload
+ * 
+ */
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)        \
+    (byte & 0x800 ? '1' : '0'),     \
+        (byte & 0x400 ? '1' : '0'), \
+        (byte & 0x200 ? '1' : '0'), \
+        (byte & 0x100 ? '1' : '0'), \
+        (byte & 0x080 ? '1' : '0'), \
+        (byte & 0x040 ? '1' : '0'), \
+        (byte & 0x020 ? '1' : '0'), \
+        (byte & 0x010 ? '1' : '0'), \
+        (byte & 0x008 ? '1' : '0'), \
+        (byte & 0x004 ? '1' : '0'), \
+        (byte & 0x002 ? '1' : '0'), \
+        (byte & 0x001 ? '1' : '0')
+
 extern SemaphoreHandle_t xJoystickSemaphore;
 extern SemaphoreHandle_t yJoystickSemaphore;
 extern SemaphoreHandle_t scrollbarSemaphore;
@@ -25,10 +44,17 @@ void receive_control_task(void* pvParameter)
     int addr_family;
     int ip_protocol;
 
+    int sock;
+    int err;
+    int len;
+    struct sockaddr_in destAddr;
+    struct sockaddr_in6 sourceAddr; // Large enough for both IPv4 or IPv6
+    socklen_t socklen;
+
     int payload;
 
     while (1) {
-        struct sockaddr_in destAddr;
+
         destAddr.sin_addr.s_addr = htonl(INADDR_ANY);
         destAddr.sin_family = AF_INET;
         destAddr.sin_port = htons(RECEIVE_CONTROL_UDP_PORT);
@@ -36,14 +62,14 @@ void receive_control_task(void* pvParameter)
         ip_protocol = IPPROTO_IP;
         inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
 
-        int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
+        sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
         if (sock < 0) {
             ESP_LOGE(TASK_TAG, "Unable to create socket: errno %d", errno);
             break;
         }
         ESP_LOGI(TASK_TAG, "Socket created");
 
-        int err = bind(sock, (struct sockaddr*)&destAddr, sizeof(destAddr));
+        err = bind(sock, (struct sockaddr*)&destAddr, sizeof(destAddr));
         if (err < 0) {
             ESP_LOGE(TASK_TAG, "Socket unable to bind: errno %d", errno);
         }
@@ -52,9 +78,8 @@ void receive_control_task(void* pvParameter)
         while (1) {
             // ESP_LOGI(TASK_TAG, "receive_control_task waiting for data");
 
-            struct sockaddr_in6 sourceAddr; // Large enough for both IPv4 or IPv6
-            socklen_t socklen = sizeof(sourceAddr);
-            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr*)&sourceAddr, &socklen);
+            socklen = sizeof(sourceAddr);
+            len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr*)&sourceAddr, &socklen);
 
             // Error occured during receiving
             if (len < 0) {
@@ -78,6 +103,7 @@ void receive_control_task(void* pvParameter)
                 // extract rx_buffer to payload
                 sscanf(rx_buffer, "%d", &payload);
 
+                ESP_LOGI(TASK_TAG, "payload =" BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(payload));
                 // extract payload to values
 
                 if (scrollbarSemaphore != NULL) {
@@ -106,6 +132,7 @@ void receive_control_task(void* pvParameter)
                     break;
                 }
             }
+            vTaskDelay(50 / portTICK_PERIOD_MS);
         }
 
         if (sock != -1) {
@@ -114,5 +141,6 @@ void receive_control_task(void* pvParameter)
             close(sock);
         }
     }
-    vTaskDelete(NULL);
+    // vTaskDelete(NULL);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
