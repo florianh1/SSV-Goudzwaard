@@ -9,7 +9,7 @@
 ******************************************************************************/
 
 /* Wi-Fi SSID, note a maximum character length of 32 */
-#define ESP_WIFI_SSID "SSV Goudzwaard"
+#define ESP_WIFI_SSID "KECH"
 
 /* Wi-Fi password, note a minimum length of 8 and a maximum length of 64 characters */
 #define ESP_WIFI_PASS "123456789"
@@ -52,18 +52,18 @@
 // #define SYRINGE_IN4 17
 //for the A4988 driver
 #define DIRPIN 12
-#define STEPPIN 15
+#define STEPPIN 4
 
 // Pins for controlling engines
 // Motor right
-#define MOTOR_PWM0A_OUT 2 //Set GPIO 2 as PWM0A
-#define MOTOR_PWM0B_OUT 4 //Set GPIO 4 as PWM0B
+#define MOTOR_PWM0A_OUT 15 //Set GPIO 2 as PWM0A
+#define MOTOR_PWM0B_OUT 16 //Set GPIO 4 as PWM0B
 // Motor motor left
-#define MOTOR_PWM1A_OUT 3 //Set GPIO 3 as PWM1A
+#define MOTOR_PWM1A_OUT 17 //Set GPIO 3 as PWM1A
 #define MOTOR_PWM1B_OUT 23 //Set GPIO 23 as PWM1B
 
-// Blink pin for testing
-#define BLINK_GPIO 2
+// pin for light in the SSV
+#define LIGHT_GPIO 2
 
 /******************************************************************************
   Camera Settings

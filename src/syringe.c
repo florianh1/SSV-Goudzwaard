@@ -43,7 +43,7 @@ void init()
 void turnStepper(int dir)
 {
     gpio_set_level(DIRPIN, dir);
-    for (int x = 0; x < 200; x++) {
+    for (int x = 0; x < 10; x++) {
         gpio_set_level(STEPPIN, GPIO_ON);
         vTaskDelay(10 / portTICK_PERIOD_MS);
         gpio_set_level(STEPPIN, GPIO_OFF);
@@ -59,7 +59,7 @@ void emptyTank()
 {
     static const char* TASK_TAG = "emptyTank";
     ESP_LOGI(TASK_TAG, "emptying the balasttank...");
-    while (waterML > 0) {
+    while (waterML > 1) {
         ESP_LOGW(TASK_TAG, "Emptying tank: Tank volume: %d", waterML);
         turnStepper(PUSH);
         waterML--;
@@ -79,8 +79,6 @@ void control_syringe_task(void* pvParameter)
     ESP_LOGI(TASK_TAG, "Initializing the scrollbar pins...");
     init();
     while (1) {
-        // turnStepper(PULL);
-        // turnStepper(PUSH);
 
         if (scrollbarSemaphore != NULL) {
             if (scrollbar < waterML) {

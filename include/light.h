@@ -1,8 +1,8 @@
 /******************************************************************************
- * File           : blink.h
+ * File           : light.h
 ******************************************************************************/
-#ifndef _BLINK_H_
-#define _BLINK_H_
+#ifndef _LIGHT_H_
+#define _LIGHT_H_
 
 #include <settings.h>
 
@@ -20,6 +20,6 @@
 /******************************************************************************
   Function prototypes
 ******************************************************************************/
-void blink_task(void* pvParameter);
+void light_task(void* pvParameter);
 
-#endif // _BLINK_H_
+#endif // _LIGHT_H_

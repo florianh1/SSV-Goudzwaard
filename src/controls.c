@@ -4,30 +4,33 @@
  * @macro for printing the binary value of the payload
  * 
  */
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)        \
-    (byte & 0x800 ? '1' : '0'),     \
-        (byte & 0x400 ? '1' : '0'), \
-        (byte & 0x200 ? '1' : '0'), \
-        (byte & 0x100 ? '1' : '0'), \
-        (byte & 0x080 ? '1' : '0'), \
-        (byte & 0x040 ? '1' : '0'), \
-        (byte & 0x020 ? '1' : '0'), \
-        (byte & 0x010 ? '1' : '0'), \
-        (byte & 0x008 ? '1' : '0'), \
-        (byte & 0x004 ? '1' : '0'), \
-        (byte & 0x002 ? '1' : '0'), \
-        (byte & 0x001 ? '1' : '0')
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)         \
+    (byte & 0x1000 ? '1' : '0'),     \
+        (byte & 0x0800 ? '1' : '0'), \
+        (byte & 0x0200 ? '1' : '0'), \
+        (byte & 0x0100 ? '1' : '0'), \
+        (byte & 0x0400 ? '1' : '0'), \
+        (byte & 0x0080 ? '1' : '0'), \
+        (byte & 0x0040 ? '1' : '0'), \
+        (byte & 0x0020 ? '1' : '0'), \
+        (byte & 0x0010 ? '1' : '0'), \
+        (byte & 0x0008 ? '1' : '0'), \
+        (byte & 0x0004 ? '1' : '0'), \
+        (byte & 0x0002 ? '1' : '0'), \
+        (byte & 0x0001 ? '1' : '0')
 
 extern SemaphoreHandle_t xJoystickSemaphore;
 extern SemaphoreHandle_t yJoystickSemaphore;
 extern SemaphoreHandle_t scrollbarSemaphore;
 extern SemaphoreHandle_t batteryPercentageSemaphore;
+extern SemaphoreHandle_t lightStatusSemaphore;
 
 extern uint8_t joystick_y;
 extern uint8_t joystick_x;
 extern uint8_t scrollbar;
 extern uint8_t battery_percentage;
+extern uint8_t lightStatus;
 
 /**
  * @TODO:
@@ -122,6 +125,12 @@ void receive_control_task(void* pvParameter)
                     if (xSemaphoreTake(xJoystickSemaphore, (TickType_t)1) == pdTRUE) {
                         joystick_x = (payload >> 9) & 0x7;
                         xSemaphoreGive(xJoystickSemaphore);
+                    }
+                }
+                if (lightStatusSemaphore != NULL) {
+                    if (xSemaphoreTake(lightStatusSemaphore, (TickType_t)1) == pdTRUE) {
+                        xSemaphoreGive(lightStatusSemaphore);
+                        lightStatus = (payload >> 12) & 0x1;
                     }
                 }
 
