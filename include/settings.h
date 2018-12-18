@@ -12,13 +12,13 @@
 #define ESP_WIFI_SSID "KECH"
 
 /* Wi-Fi password, note a minimum length of 8 and a maximum length of 64 characters */
-#define ESP_WIFI_PASS "123456789"
+#define ESP_WIFI_PASS "12345678"
 
 /* Wi-Fi channel, note a range from 0 to 13 */
-#define ESP_WIFI_CHANNEL 0
+#define ESP_WIFI_CHANNEL 13
 
 /* Amount of Access Point connections, note a maximum amount of 4 */
-#define AP_MAX_CONNECTIONS 2
+#define AP_MAX_CONNECTIONS 4
 
 /******************************************************************************
   Pins

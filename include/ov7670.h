@@ -50,7 +50,7 @@ uint16_t getPID(void);
 void vflip(bool enable);
 void setColor(uint8_t color);
 
-void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed);
+esp_err_t i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed);
 
 void wrReg(uint8_t reg, uint8_t dat);
 uint8_t rdReg(uint8_t reg);
