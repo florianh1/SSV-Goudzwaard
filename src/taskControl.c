@@ -28,12 +28,12 @@ void task_control(void* pvParameter)
         if ((!(number_of_devices_connected > 0)) || (battery_percentage < 5)) {
             // stop the tasks
 
-            if (blink_task_handler != NULL) {
-                if (eTaskGetState(blink_task_handler) != eSuspended) {
-                    ESP_LOGI(TASK_TAG, "Suspending blink_task");
-                    vTaskSuspend(blink_task_handler);
-                }
-            }
+            // if (blink_task_handler != NULL) {
+            //     if (eTaskGetState(blink_task_handler) != eSuspended) {
+            //         ESP_LOGI(TASK_TAG, "Suspending blink_task");
+            //         vTaskSuspend(blink_task_handler);
+            //     }
+            // }
 
             if (camera_task_handler != NULL) {
                 if (eTaskGetState(camera_task_handler) != eSuspended) {
@@ -77,12 +77,12 @@ void task_control(void* pvParameter)
         } else {
             // continue the tasks
 
-            if (blink_task_handler != NULL) {
-                if (eTaskGetState(blink_task_handler) == eSuspended) {
-                    ESP_LOGI(TASK_TAG, "Continuing blink_task");
-                    vTaskResume(blink_task_handler);
-                }
-            }
+            // if (blink_task_handler != NULL) {
+            //     if (eTaskGetState(blink_task_handler) == eSuspended) {
+            //         ESP_LOGI(TASK_TAG, "Continuing blink_task");
+            //         vTaskResume(blink_task_handler);
+            //     }
+            // }
 
             if (camera_task_handler != NULL) {
                 if (eTaskGetState(camera_task_handler) == eSuspended) {
@@ -120,7 +120,7 @@ void task_control(void* pvParameter)
             }
         }
 
-        // Delay 1 seconds
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        // Delay 5 seconds
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 }

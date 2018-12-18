@@ -113,7 +113,6 @@ void camera_task(void* pvParameter)
     if (err != ESP_OK) {
         ESP_LOGE(TASK_TAG, "Camera init error");
     }
-    
 
     ESP_LOGI(TASK_TAG, "cam MID = %X\n\r", getMID());
     ESP_LOGI(TASK_TAG, "cam PID = %X\n\r", getPID());
@@ -141,6 +140,9 @@ void camera_task(void* pvParameter)
             break;
         }
         ESP_LOGI(TASK_TAG, "Socket created");
+
+        int success_messages = 0;
+
         while (1) {
 
             uint16_t y, dy;
@@ -167,14 +169,20 @@ void camera_task(void* pvParameter)
 
                     if (err < 0) {
                         ESP_LOGE(TASK_TAG, "Error occured during sending video frame: errno %d size %d", errno, (data_size + 2));
+                        success_messages = 0;
                         break;
                     } else {
-                        ESP_LOGI(TASK_TAG, "Message send!");
+                        success_messages++;
+
+                        if (success_messages == (16 * 20)) {
+                            ESP_LOGI(TASK_TAG, "320 messages send!");
+                            success_messages = 0;
+                        }
                     }
                 }
             }
 
-            // transmit 10 times per second
+            // transmit 4 times per second
             vTaskDelay(250 / portTICK_PERIOD_MS);
         }
 

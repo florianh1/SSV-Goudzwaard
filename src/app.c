@@ -41,7 +41,7 @@ TaskHandle_t receive_control_task_handler = NULL;
 TaskHandle_t control_syringe_task_handler = NULL;
 TaskHandle_t motor_task_handler = NULL;
 TaskHandle_t light_task_handler = NULL;
-TaskHandle_t control_task_handler = NULL;
+TaskHandle_t task_control_handler = NULL;
 
 extern EventGroupHandle_t wifi_event_group;
 extern const int CLIENT_CONNECTED_BIT;
