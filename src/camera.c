@@ -35,7 +35,7 @@
 #define CAM_DIV 1
 #endif
 
-#define PACKET_SIZE 2400 // For exactly 8 packets
+#define PACKET_SIZE 1200 // For exactly 16 packets
 
 //******************************************
 
@@ -172,7 +172,7 @@ void camera_task(void* pvParameter)
             }
 
             // transmit 10 times per second
-            vTaskDelay(100 / portTICK_PERIOD_MS);
+            vTaskDelay(250 / portTICK_PERIOD_MS);
         }
 
         if (sock != -1) {

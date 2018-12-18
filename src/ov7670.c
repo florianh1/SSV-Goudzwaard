@@ -427,7 +427,7 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
         break;
     }
 
-    i2c_init(CAMERA_SDA, CAMERA_SCL, 100000);
+    i2c_init(CAMERA_SDA, CAMERA_SCL, 400000);
 
     err = I2S_camera_init(&cam_conf);
     if (err != ESP_OK) {
@@ -566,7 +566,7 @@ void setVStart(uint16_t vstart)
 bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 {
 #ifdef CONVERT_RGB565_TO_RGB332
-    uint8_t *p_buf;
+    uint8_t* p_buf;
     uint16_t i;
     uint16_t wb = cam_conf.frame_width;
 #else

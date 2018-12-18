@@ -173,10 +173,10 @@ void app_main()
             // move submarine to surface
             scrollbar = 0;
             if (waterML == 0) {
-                if (control_syringe_task != NULL) {
-                    if (eTaskGetState(control_syringe_task) != eSuspended) {
+                if (control_syringe_task_handler != NULL) {
+                    if (eTaskGetState(control_syringe_task_handler) != eSuspended) {
                         ESP_LOGI(APP_MAIN_TAG, "Suspending control syringe task");
-                        vTaskSuspend(control_syringe_task);
+                        vTaskSuspend(control_syringe_task_handler);
                     }
                 }
             }
