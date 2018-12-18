@@ -113,6 +113,7 @@ void camera_task(void* pvParameter)
     if (err != ESP_OK) {
         ESP_LOGE(TASK_TAG, "Camera init error");
     }
+    
 
     ESP_LOGI(TASK_TAG, "cam MID = %X\n\r", getMID());
     ESP_LOGI(TASK_TAG, "cam PID = %X\n\r", getPID());
