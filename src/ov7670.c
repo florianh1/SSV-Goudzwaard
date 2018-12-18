@@ -575,6 +575,8 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 #endif // CONVERT_RGB565_TO_RGB332
 
     for (i = 0; i < n; i++) {
+
+        // ESP_LOGI("lines", "i: %d, tot: %d", i, n);
         p_buf = camera_getLine(lineno + i);
 
         if (p_buf == NULL)

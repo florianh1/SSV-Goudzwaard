@@ -86,7 +86,7 @@ bool allocateMemory(uint16_t w, uint16_t h)
     line_size = w * 2;
     data_size = 2 + line_size * h;
 #endif // CONVERT_RGB565_TO_RGB332
-    camData = (uint8_t*)malloc(data_size + 2);
+    camData = (uint8_t*)malloc(data_size + 4);
     if (camData == NULL) {
         ESP_LOGI("allocateMemory", "******** Memory allocate Error! ***********");
         return false;
@@ -147,7 +147,7 @@ void camera_task(void* pvParameter)
 
             for (y = 0; y < CAM_HEIGHT; y += dy) {
 
-                getLines(y + 1, &camData[2], dy);
+                getLines(y + 1, &camData[4], dy);
 
                 uint8_t parts = (data_size % PACKET_SIZE == 0) ? (data_size / PACKET_SIZE) : (data_size / PACKET_SIZE) + 1;
 
@@ -167,6 +167,8 @@ void camera_task(void* pvParameter)
                     if (err < 0) {
                         ESP_LOGE(TASK_TAG, "Error occured during sending video frame: errno %d size %d", errno, (data_size + 2));
                         break;
+                    } else {
+                        ESP_LOGI(TASK_TAG, "Message send!");
                     }
                 }
             }
