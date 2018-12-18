@@ -12,7 +12,7 @@
 #define ESP_WIFI_SSID "SSV Goudzwaard"
 
 /* Wi-Fi password, note a minimum length of 8 and a maximum length of 64 characters */
-#define ESP_WIFI_PASS "123456789"
+#define ESP_WIFI_PASS "12345678"
 
 /* Wi-Fi channel, note a range from 0 to 13 */
 #define ESP_WIFI_CHANNEL 0
