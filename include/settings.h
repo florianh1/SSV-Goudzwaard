@@ -9,7 +9,7 @@
 ******************************************************************************/
 
 /* Wi-Fi SSID, note a maximum character length of 32 */
-#define ESP_WIFI_SSID "SSV Goudzwaard"
+#define ESP_WIFI_SSID "Hendrikus"
 
 /* Wi-Fi password, note a minimum length of 8 and a maximum length of 64 characters */
 #define ESP_WIFI_PASS "12345678"

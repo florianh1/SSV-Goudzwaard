@@ -427,13 +427,26 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
         break;
     }
 
-    i2c_init(CAMERA_SDA, CAMERA_SCL, 400000);
+    err = i2c_init(CAMERA_SDA, CAMERA_SCL, 400000);
+
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, " I2C Camera init ERROR");
+        return err;
+    } else {
+        ESP_LOGI(TAG, " I2C Camera init OK");
+    }
+
+    ESP_LOGE(TAG, " INIT I2S");
 
     err = I2S_camera_init(&cam_conf);
     if (err != ESP_OK) {
-        ESP_LOGI(TAG, " I2S Camera init ERROR");
+        ESP_LOGE(TAG, " I2S Camera init ERROR");
         return err;
+    } else {
+        ESP_LOGI(TAG, " I2S Camera init OK");
     }
+
+    ESP_LOGE(TAG, " INIT I2S DONE");
 
     reset();
 
@@ -690,8 +703,9 @@ uint16_t getPID(void)
  * @param scl 
  * @param clk_speed 
  */
-void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
+esp_err_t i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
 {
+    esp_err_t err;
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = sda,
@@ -701,8 +715,19 @@ void i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
         .master.clk_speed = clk_speed,
     };
 
-    ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
-    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
+    err = i2c_param_config(I2C_NUM_0, &conf);
+
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    err = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    return ESP_OK;
 }
 
 /**
@@ -725,7 +750,9 @@ void wrReg(uint8_t reg, uint8_t dat)
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 
-    ESP_ERROR_CHECK(ret);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "I2C error: %x", ret);
+    }
 
     ESP_LOGI(TAG, "i2c write reg:%02X data:%02X", reg, dat);
 }
@@ -750,6 +777,10 @@ uint8_t rdReg(uint8_t reg)
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "I2C error: %x", ret);
+    }
+
     cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (0x21 << 1) | I2C_MASTER_READ, true);
@@ -758,7 +789,9 @@ uint8_t rdReg(uint8_t reg)
     ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 
-    ESP_ERROR_CHECK(ret);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "I2C error: %x", ret);
+    }
 
     ESP_LOGI(TAG, "i2c read reg:%02X data:%02X", reg, dat);
 

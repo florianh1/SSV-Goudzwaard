@@ -54,6 +54,7 @@ static void IRAM_ATTR VSYNC_isr(void* arg)
  */
 esp_err_t I2S_camera_init(camera_config_t* config)
 {
+
     memcpy(&s_config, config, sizeof(s_config));
 
     s_buf_line_width = s_config.frame_width * s_config.pixel_byte_num;
@@ -78,13 +79,16 @@ esp_err_t I2S_camera_init(camera_config_t* config)
         }
     }
 #endif
+
     s_fb_idx = 0;
     s_data_ready = xSemaphoreCreateBinary();
     s_line_ready = xSemaphoreCreateBinary();
     s_vsync_catch = xSemaphoreCreateBinary();
 
     i2s_init();
+
     esp_err_t err = dma_desc_init();
+
     if (err != ESP_OK) {
 #ifdef CONVERT_RGB565_TO_RGB332
         free(s_fb);
@@ -95,15 +99,17 @@ esp_err_t I2S_camera_init(camera_config_t* config)
         ESP_LOGE(TAG, "Faild to allocate dma buffer");
         return err;
     }
+
     xTaskCreatePinnedToCore(&line_filter_task, "line_filter", 2048, NULL, 10, NULL, 0);
 
     // skip at least one frame after changing camera settings
-    while (gpio_get_level(s_config.VSYNC) == 1) {
-    }
-    while (gpio_get_level(s_config.VSYNC) == 0) {
-    }
-    while (gpio_get_level(s_config.VSYNC) == 1) {
-    }
+
+    // while (gpio_get_level(s_config.VSYNC) == 1) {
+    // }
+    // while (gpio_get_level(s_config.VSYNC) == 0) {
+    // }
+    // while (gpio_get_level(s_config.VSYNC) == 1) {
+    // }
 
     s_initialized = true;
     return ESP_OK;
@@ -371,7 +377,7 @@ static void line_filter_task(void* pvParameters)
 
             // *pfb++ = (uint8_t)(0x000000F8);
             // *pfb++ = (uint8_t)((0x00000000) >> 16);
-                }
+        }
         xSemaphoreGive(s_line_ready);
     }
 }
