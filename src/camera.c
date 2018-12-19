@@ -143,6 +143,8 @@ void camera_task(void* pvParameter)
 
         int success_messages = 0;
 
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+
         while (1) {
 
             uint16_t y, dy;

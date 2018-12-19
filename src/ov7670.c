@@ -436,8 +436,6 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
         ESP_LOGI(TAG, " I2C Camera init OK");
     }
 
-    ESP_LOGE(TAG, " INIT I2S");
-
     err = I2S_camera_init(&cam_conf);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, " I2S Camera init ERROR");
@@ -446,11 +444,11 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
         ESP_LOGI(TAG, " I2S Camera init OK");
     }
 
-    ESP_LOGE(TAG, " INIT I2S DONE");
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
 
     reset();
 
-    ESP_LOGI(TAG, "---- Camera init ok! ----");
+    ESP_LOGI(TAG, "Camera init ok!");
     return err;
 }
 
@@ -586,10 +584,7 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
     uint16_t i, *p_buf;
     uint16_t wb = cam_conf.frame_width * cam_conf.pixel_byte_num;
 #endif // CONVERT_RGB565_TO_RGB332
-
     for (i = 0; i < n; i++) {
-
-        // ESP_LOGI("lines", "i: %d, tot: %d", i, n);
         p_buf = camera_getLine(lineno + i);
 
         if (p_buf == NULL)
@@ -597,7 +592,6 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 
         memcpy(&buf[i * wb], (uint8_t*)p_buf, wb);
     }
-
     return true;
 }
 
