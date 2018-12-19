@@ -140,5 +140,6 @@ void app_main()
     xTaskCreate(&receive_control_task, "receive_control_task", 2048 * 2, NULL, 5, &receive_control_task_handler);
     xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, &control_syringe_task_handler);
     xTaskCreate(&motor_task, "motor_task", 2048, NULL, 5, &motor_task_handler);
+    xTaskCreate(&light_task, "light_task", 2048, NULL, 9, &light_task_handler);
     xTaskCreate(&task_control, "task_control", 2048, NULL, 5, &task_control_handler);
 }

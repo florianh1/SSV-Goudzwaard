@@ -427,7 +427,9 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
         break;
     }
 
-    err = i2c_init(CAMERA_SDA, CAMERA_SCL, 400000);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+
+    err = i2c_init(CAMERA_SDA, CAMERA_SCL, 200000);
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, " I2C Camera init ERROR");
@@ -443,8 +445,6 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
     } else {
         ESP_LOGI(TAG, " I2S Camera init OK");
     }
-
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
 
     reset();
 
