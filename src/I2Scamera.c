@@ -337,12 +337,9 @@ esp_err_t dma_desc_init(void)
 static void line_filter_task(void* pvParameters)
 {
     while (true) {
-        gpio_set_level(2, 1); // 2 = LED pin
 
         xSemaphoreTake(s_data_ready, portMAX_DELAY);
         int buf_idx = !s_cur_buffer;
-
-        gpio_set_level(2, 0); // 2 = LED pin
 
         s_fb_idx = (s_fb_idx + 1) % 1;
         uint8_t* pfb = s_fb;
@@ -361,12 +358,9 @@ static void line_filter_task(void* pvParameters)
 static void line_filter_task(void* pvParameters)
 {
     while (true) {
-        gpio_set_level(2, 1); // 2 = LED pin
 
         xSemaphoreTake(s_data_ready, portMAX_DELAY);
         int buf_idx = !s_cur_buffer;
-
-        gpio_set_level(2, 0); // 2 = LED pin
 
         s_fb_idx = (s_fb_idx + 1) % 1;
         uint8_t* pfb = s_fb[s_fb_idx];
