@@ -10,7 +10,7 @@ extern TaskHandle_t battery_percentage_transmit_task_handler;
 extern TaskHandle_t receive_control_task_handler;
 extern TaskHandle_t control_syringe_task_handler;
 extern TaskHandle_t motor_task_handler;
-extern TaskHandle_t blink_task_handler;
+extern TaskHandle_t light_task_handler;
 
 extern uint8_t joystick_y;
 extern uint8_t joystick_x;
@@ -28,10 +28,10 @@ void task_control(void* pvParameter)
         if ((!(number_of_devices_connected > 0)) || (battery_percentage < 5)) {
             // stop the tasks
 
-            if (blink_task_handler != NULL) {
-                if (eTaskGetState(blink_task_handler) != eSuspended) {
+            if (light_task_handler != NULL) {
+                if (eTaskGetState(light_task_handler) != eSuspended) {
                     ESP_LOGI(TASK_TAG, "Suspending blink_task");
-                    vTaskSuspend(blink_task_handler);
+                    vTaskSuspend(light_task_handler);
                 }
             }
 
@@ -77,10 +77,10 @@ void task_control(void* pvParameter)
         } else {
             // continue the tasks
 
-            if (blink_task_handler != NULL) {
-                if (eTaskGetState(blink_task_handler) == eSuspended) {
+            if (light_task_handler != NULL) {
+                if (eTaskGetState(light_task_handler) == eSuspended) {
                     ESP_LOGI(TASK_TAG, "Continuing blink_task");
-                    vTaskResume(blink_task_handler);
+                    vTaskResume(light_task_handler);
                 }
             }
 
@@ -120,7 +120,7 @@ void task_control(void* pvParameter)
             }
         }
 
-        // Delay 1 seconds
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        // Delay 5 seconds
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 }

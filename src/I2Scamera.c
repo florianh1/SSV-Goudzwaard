@@ -31,6 +31,7 @@ static void IRAM_ATTR i2s_isr(void* arg);
 static esp_err_t dma_desc_init(void);
 static void line_filter_task(void* pvParameters);
 static void IRAM_ATTR VSYNC_isr(void* arg);
+static void i2s_stop();
 
 /**
  * @TODO:
@@ -121,7 +122,10 @@ esp_err_t I2S_camera_init(camera_config_t* config)
  */
 static void i2s_frameReadStart(void)
 {
-    xSemaphoreTake(s_vsync_catch, portMAX_DELAY); // VSYNC wait
+    i2s_stop();
+
+    xSemaphoreTake(s_vsync_catch, 6000 / portTICK_PERIOD_MS); // VSYNC wait
+
     vsync_check = false;
     s_cur_buffer = 0;
     s_line_count = 0;
@@ -147,12 +151,11 @@ uint16_t* camera_getLine(uint16_t lineno)
             vsync_check = true;
             i2s_frameReadStart();
         }
-
-        xSemaphoreTake(s_line_ready, portMAX_DELAY);
-        if (xTaskGetTickCount() - time > 2000) {
+        xSemaphoreTake(s_line_ready, 1500 / portTICK_PERIOD_MS);
+        if (xTaskGetTickCount() - time > 1000) {
+            ESP_LOGE(TAG, "Dropped line");
             return NULL;
         }
-
     } while (lineno != s_line_count);
 
 #ifdef CONVERT_RGB565_TO_RGB332
@@ -390,6 +393,7 @@ static void line_filter_task(void* pvParameters)
  */
 static void IRAM_ATTR i2s_isr(void* arg) // 1 Line read done
 {
+
     I2S0.int_clr.val = I2S0.int_raw.val;
 
     s_cur_buffer = !s_cur_buffer;
