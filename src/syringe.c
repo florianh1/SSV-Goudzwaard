@@ -79,7 +79,6 @@ void control_syringe_task(void* pvParameter)
     ESP_LOGI(TASK_TAG, "Initializing the scrollbar pins...");
     init();
     while (1) {
-
         if (scrollbarSemaphore != NULL) {
             if (scrollbar < waterML) {
                 turnStepper(PUSH);
