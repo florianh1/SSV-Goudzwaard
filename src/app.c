@@ -135,11 +135,11 @@ void app_main()
     ESP_LOGI(APP_MAIN_TAG, "Device connected, starting tasks!");
 
     // start the tasks
-    xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 5, &camera_task_handler);
-    xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 2048, NULL, 5, &battery_percentage_transmit_task_handler);
+    xTaskCreate(&camera_task, "camera_task", 4096 * 2, NULL, 4, &camera_task_handler);
+    xTaskCreate(&battery_percentage_transmit_task, "battery_percentage_transmit_task", 2048, NULL, 7, &battery_percentage_transmit_task_handler);
     xTaskCreate(&receive_control_task, "receive_control_task", 2048 * 2, NULL, 5, &receive_control_task_handler);
     xTaskCreate(&control_syringe_task, "control_syringe_task", 4096, NULL, 5, &control_syringe_task_handler);
     xTaskCreate(&motor_task, "motor_task", 2048, NULL, 5, &motor_task_handler);
     xTaskCreate(&light_task, "light_task", 2048, NULL, 9, &light_task_handler);
-    xTaskCreate(&task_control, "task_control", 2048, NULL, 5, &task_control_handler);
+    xTaskCreate(&task_control, "task_control", 2048, NULL, 3, &task_control_handler);
 }
