@@ -343,7 +343,8 @@ void conf_setFrameSize(uint8_t res)
 }
 
 /**
- * @TODO:
+ * Reset the camera
+ * Write the default, resolution and colormode settings to the camera using the i2c bus
  * 
  */
 void reset(void)
@@ -360,12 +361,16 @@ void reset(void)
 }
 
 /**
- * @TODO:
+ * Initialize the camera:
+ * Set the XCLOCK to cam_conf.xclk_freq_hz
+ * Init i2c for accessing the camera
+ * Set up the camera using i2c
  * 
- * @param value 
- * @param res 
- * @param colmode 
- * @return esp_err_t 
+ * 
+ * @param value camera config
+ * @param res resolution
+ * @param colmode color mode
+ * @return esp_err_t return
  */
 esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode)
 {
@@ -453,7 +458,8 @@ esp_err_t init_camera(const camera_config_t* value, uint8_t res, uint8_t colmode
 }
 
 /**
- * @TODO:
+ * Set the resolutin of the camera:
+ * VGA, QVGA, QQVGA, CIF, QCIF, QQCIF
  * 
  * @param res 
  */
@@ -520,7 +526,7 @@ void setResolution(uint8_t res)
 }
 
 /**
- * @TODO:
+ * Set the hstart
  * 
  * @param hstart 
  */
@@ -551,7 +557,7 @@ void setHStart(uint16_t hstart)
 }
 
 /**
- * @TODO:
+ * Set the vstart
  * 
  * @param vstart 
  */
@@ -566,13 +572,13 @@ void setVStart(uint16_t vstart)
 }
 
 /**
- * @TODO:
+ * Get multiple lines of the camera: a frame
  * 
- * @param lineno 
- * @param buf 
- * @param n 
- * @return true 
- * @return false 
+ * @param lineno number of lines
+ * @param buf location to write to
+ * @param n offset
+ * @return true success
+ * @return false failure
  */
 bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 {
@@ -596,9 +602,9 @@ bool getLines(uint16_t lineno, uint8_t* buf, uint16_t n)
 }
 
 /**
- * @TODO:
+ * Set the colormode of the ov7670
  * 
- * @param colormode 
+ * @param colormode YUV422, RGB565, BAYER_RAW or PBAYER_RAW
  */
 void setColor(uint8_t colormode)
 {
@@ -632,7 +638,7 @@ void setColor(uint8_t colormode)
 }
 
 /**
- * @TODO
+ * Set the PCLK
  * 
  * @param pre 
  * @param pll 
@@ -648,7 +654,7 @@ void setPCLK(uint8_t pre, uint8_t pll)
 }
 
 /**
- * @TODO:
+ * Rewrite the PCLK
  * 
  */
 void rewrCLKRC(void)
@@ -659,9 +665,9 @@ void rewrCLKRC(void)
 }
 
 /**
- * @TODO:
+ * Configure the camera to flip or not
  * 
- * @param enable 
+ * @param enable flip or don't flip
  */
 void vflip(bool enable)
 {
@@ -673,7 +679,7 @@ void vflip(bool enable)
 }
 
 /**
- * @TODO:
+ * Get the Product ID Number MSB of the ov7670
  * 
  * @return uint16_t 
  */
@@ -683,7 +689,7 @@ uint16_t getMID(void)
 }
 
 /**
- * @TODO:
+ * Get the Product ID Number LSB of the ov7670
  * 
  * @return uint16_t 
  */
@@ -693,11 +699,11 @@ uint16_t getPID(void)
 }
 
 /**
- * @TODO:
+ * Init i2c bus
  * 
- * @param sda 
- * @param scl 
- * @param clk_speed 
+ * @param sda data line
+ * @param scl clock line
+ * @param clk_speed i2c speed
  */
 esp_err_t i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
 {
@@ -727,10 +733,10 @@ esp_err_t i2c_init(uint8_t sda, uint8_t scl, uint32_t clk_speed)
 }
 
 /**
- * @TODO:
+ * Write one register of the ov7670 using i2c
  * 
- * @param reg 
- * @param dat 
+ * @param reg register to write
+ * @param dat data to write to register
  */
 void wrReg(uint8_t reg, uint8_t dat)
 {
@@ -754,10 +760,10 @@ void wrReg(uint8_t reg, uint8_t dat)
 }
 
 /**
- * @TODO:
+ * Read one register of the ov7670 using i2c
  * 
- * @param reg 
- * @return uint8_t 
+ * @param reg register to read
+ * @return uint8_t read register
  */
 uint8_t rdReg(uint8_t reg)
 {
@@ -795,9 +801,9 @@ uint8_t rdReg(uint8_t reg)
 }
 
 /**
- * @TODO:
+ * Write multiple registers using i2c
  * 
- * @param reglist 
+ * @param reglist array of registers to write with data
  */
 void wrRegs(const struct regval_list* reglist)
 {
