@@ -30,7 +30,7 @@ void task_control(void* pvParameter)
 
             if (light_task_handler != NULL) {
                 if (eTaskGetState(light_task_handler) != eSuspended) {
-                    ESP_LOGI(TASK_TAG, "Suspending blink_task");
+                    ESP_LOGI(TASK_TAG, "Suspending light_task");
                     vTaskSuspend(light_task_handler);
                 }
             }
@@ -79,7 +79,7 @@ void task_control(void* pvParameter)
 
             if (light_task_handler != NULL) {
                 if (eTaskGetState(light_task_handler) == eSuspended) {
-                    ESP_LOGI(TASK_TAG, "Continuing blink_task");
+                    ESP_LOGI(TASK_TAG, "Continuing light_task");
                     vTaskResume(light_task_handler);
                 }
             }
