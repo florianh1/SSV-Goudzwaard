@@ -34,7 +34,7 @@ static void IRAM_ATTR VSYNC_isr(void* arg);
 static void i2s_stop();
 
 /**
- * @TODO:
+ * VSYNC interrupt handler
  * 
  * @param arg 
  */
@@ -48,7 +48,7 @@ static void IRAM_ATTR VSYNC_isr(void* arg)
 }
 
 /**
- * @TODO:
+ * Init i2s
  * 
  * @param config 
  * @return esp_err_t 
@@ -117,7 +117,7 @@ esp_err_t I2S_camera_init(camera_config_t* config)
 }
 
 /**
- * @TODO:
+ * Start reading a i2s frame
  * 
  */
 static void i2s_frameReadStart(void)
@@ -134,6 +134,13 @@ static void i2s_frameReadStart(void)
 }
 
 #ifdef CONVERT_RGB565_TO_RGB332
+
+/**
+ * @brief Get a line from the camera
+ * 
+ * @param lineno linenumber
+ * @return uint8_t* line
+ */
 uint8_t* camera_getLine(uint16_t lineno)
 {
 #else
@@ -166,7 +173,7 @@ uint16_t* camera_getLine(uint16_t lineno)
 }
 
 /**
- * @TODO:
+ * Reset the i2s config
  * 
  */
 static inline void i2s_conf_reset()
@@ -180,7 +187,7 @@ static inline void i2s_conf_reset()
 }
 
 /**
- * @TODO:
+ * Init i2s
  * 
  */
 static void i2s_init()
@@ -273,7 +280,7 @@ static void i2s_init()
 }
 
 /**
- * @TODO
+ * Start i2s
  * 
  * @param index 
  */
@@ -293,7 +300,7 @@ static void i2s_readStart(int index)
 }
 
 /**
- * @TODO:
+ * Stop i2s
  * 
  */
 static void i2s_stop()
@@ -306,7 +313,7 @@ static void i2s_stop()
 }
 
 /**
- * @TODO:
+ * This function will init the dma buffer
  * 
  * @return esp_err_t 
  */
@@ -332,8 +339,13 @@ esp_err_t dma_desc_init(void)
     return ESP_OK;
 }
 
-//============= task ===================================
+/**
+ * @brief This task is responsible for filtering the lines from the camera. Every pixel (2Byte i2s overhead + 2Byte pixeldata = 32bit bit per pixel) has to saved from the dma to the bufer (16 bit per pixel)
+ * 
+ * @param pvParameters 
+ */
 #ifdef CONVERT_RGB565_TO_RGB332
+
 static void line_filter_task(void* pvParameters)
 {
     while (true) {
@@ -381,7 +393,7 @@ static void line_filter_task(void* pvParameters)
 #endif
 
 /**
- * @TODO:
+ * Read line interrupt handler
  * 
  * @param arg 
  */

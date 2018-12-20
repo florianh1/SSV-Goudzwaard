@@ -68,7 +68,7 @@ uint16_t line_size;
 uint16_t line_h;
 
 /**
- * @TODO:
+ * This function allocates memmory for reading a frame from te camera
  *
  * @param w
  * @param h
@@ -96,7 +96,7 @@ bool allocateMemory(uint16_t w, uint16_t h)
 }
 
 /**
- * @TODO:
+ * Task for reading the camera. This task will get a frame with getlines, and transmit it using udp. The format of the payload can be found in the design document
  *
  * @param pvParameter
  */
