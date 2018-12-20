@@ -151,8 +151,8 @@ uint16_t* camera_getLine(uint16_t lineno)
             vsync_check = true;
             i2s_frameReadStart();
         }
-        xSemaphoreTake(s_line_ready, 1500 / portTICK_PERIOD_MS);
-        if (xTaskGetTickCount() - time > 1000) {
+        xSemaphoreTake(s_line_ready, 2500 / portTICK_PERIOD_MS);
+        if (xTaskGetTickCount() - time > 2000) {
             ESP_LOGE(TAG, "Dropped line");
             return NULL;
         }
