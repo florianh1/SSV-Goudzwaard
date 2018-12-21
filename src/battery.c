@@ -1,7 +1,7 @@
 
 #include <battery.h>
 
-#define BATTERY_DEMOVALLUE
+#define BATTERY_DEMOVALUE
 
 extern SemaphoreHandle_t batteryPercentageSemaphore;
 
@@ -79,6 +79,9 @@ void battery_percentage_transmit_task(void* pvParameter)
  */
 uint8_t calc_average_battery_percentage()
 {
+#ifdef BATTERY_DEMOVALUE
+    return 94;
+#else
     int cell_1_value = adc1_get_raw(BATTERY_CELL_1);
     int cell_2_value = adc1_get_raw(BATTERY_CELL_2);
     int cell_3_value = adc1_get_raw(BATTERY_CELL_3);
@@ -95,9 +98,6 @@ uint8_t calc_average_battery_percentage()
         cell_value = cell_3_value;
     }
 
-#ifdef BATTERY_DEMOVALLUE
-    return 94;
-#else
     // Since we read a 10 bit value from adc, the maximum value will be 1024.
     return (uint8_t)((cell_value / 1024) * 100);
 #endif
