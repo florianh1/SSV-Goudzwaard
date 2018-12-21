@@ -67,9 +67,15 @@ void wifi_init()
         },
     };
 
-    if (strlen(ESP_WIFI_SSID) == 0) {
-        ESP_LOGW(TAG, "Password lenght is 0, changing authmode to OPEN...");
-        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+    if (strlen(ESP_WIFI_PASS) < 8) {
+        if (strlen(ESP_WIFI_PASS) == 0) {
+            ESP_LOGW(TAG, "Password length is 0, changing authmode to OPEN...");
+            wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+        } else {
+            ESP_LOGE(TAG, "Password length can range from 8 to 64, set length: %u", strlen(ESP_WIFI_PASS));
+            ESP_LOGW(TAG, "Changing authmode to OPEN...");
+            wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+        }
     }
 
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));

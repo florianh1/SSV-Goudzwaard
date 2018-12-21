@@ -96,7 +96,8 @@ bool allocateMemory(uint16_t w, uint16_t h)
 }
 
 /**
- * Task for reading the camera. This task will get a frame with getlines, and transmit it using udp. The format of the payload can be found in the design document
+ * Task for reading the camera. This task will get a frame with getlines,
+ * and transmit it using udp. The format of the payload can be found in the design document
  *
  * @param pvParameter
  */
