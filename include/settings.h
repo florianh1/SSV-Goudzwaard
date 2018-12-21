@@ -83,7 +83,6 @@
 //#define CAM_COLOR PBAYER_RAW
 
 #define CONVERT_RGB565_TO_RGB332
-//#define USE_BMP_HEADER
 
 /******************************************************************************
   Port numbers
@@ -92,5 +91,6 @@
 /* Port number of UDP-servers */
 #define RECEIVE_CONTROL_UDP_PORT 3333
 #define TRANSMIT_BATTERY_PERCENTAGE_UDP_PORT 3334
+#define TRANSMIT_VIDEO_FRAME_UDP_PORT 5000
 
 #endif //_SETTINGS_H_

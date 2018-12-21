@@ -58,7 +58,7 @@ void battery_percentage_transmit_task(void* pvParameter)
             }
             ESP_LOGI(TASK_TAG, "battery percentage sent: %d", battery_percentage);
 
-            // transmit every 10 seconds
+            // transmit every 1 second
             vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
 

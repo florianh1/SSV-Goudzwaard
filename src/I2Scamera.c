@@ -382,10 +382,7 @@ static void line_filter_task(void* pvParameters)
             uint32_t v = *buf++; // Get 32 bit from DMA buffer, 1 Pixel = (2Byte i2s overhead + 2Byte pixeldata)
 
             *pfb++ = (uint8_t)(v & 0x000000ff);
-            *pfb++ = (uint8_t)((v & 0x00ff0000) >> 16);
-
-            // *pfb++ = (uint8_t)(0x000000F8);
-            // *pfb++ = (uint8_t)((0x00000000) >> 16);
+            *pfb++ = (uint8_t)((v & 0x00ff0000) >> 16);s
         }
         xSemaphoreGive(s_line_ready);
     }

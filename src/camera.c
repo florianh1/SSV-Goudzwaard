@@ -130,7 +130,7 @@ void camera_task(void* pvParameter)
         struct sockaddr_in destAddr;
         destAddr.sin_addr.s_addr = inet_addr("192.168.1.255");
         destAddr.sin_family = AF_INET;
-        destAddr.sin_port = htons(5000);
+        destAddr.sin_port = htons(TRANSMIT_VIDEO_FRAME_UDP_PORT);
         addr_family = AF_INET;
         ip_protocol = IPPROTO_IP;
         inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
