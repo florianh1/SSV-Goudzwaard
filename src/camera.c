@@ -51,7 +51,7 @@ camera_config_t cam_conf = {
     .XCLK = CAMERA_XCLK,
     .PCLK = CAMERA_PCLK,
     .VSYNC = CAMERA_VSYNC,
-    .xclk_freq_hz = 20000000, // XCLK 10MHz
+    .xclk_freq_hz = 10000000, // XCLK 10MHz
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0
 };
