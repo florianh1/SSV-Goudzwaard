@@ -43,7 +43,7 @@ void init()
 void turnStepper(int dir)
 {
     gpio_set_level(DIRPIN, dir);
-    for (int x = 0; x < 10; x++) {
+    for (int x = 0; x < 17; x++) {
         gpio_set_level(STEPPIN, GPIO_ON);
         vTaskDelay(10 / portTICK_PERIOD_MS);
         gpio_set_level(STEPPIN, GPIO_OFF);
