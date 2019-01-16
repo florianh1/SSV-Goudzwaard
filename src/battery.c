@@ -1,8 +1,8 @@
 
-#include <battery.h>
 #include "esp_adc_cal.h"
+#include <battery.h>
 
-//#define BATTERY_DEMOVALUE
+#define BATTERY_DEMOVALUE
 
 extern SemaphoreHandle_t batteryPercentageSemaphore;
 
@@ -121,11 +121,11 @@ float get_voltage_before_resistors(float voltage_after_resistors)
     float voltage_before_resistors = 0;
 
     if (lowest_cell == 1) {
-        voltage_before_resistors = (float) (voltage_after_resistors / 10 * 13.3);
+        voltage_before_resistors = (float)(voltage_after_resistors / 10 * 13.3);
     } else if (lowest_cell == 2) {
-        voltage_before_resistors = (float) (voltage_after_resistors / 10 * 28);
+        voltage_before_resistors = (float)(voltage_after_resistors / 10 * 28);
     } else {
-        voltage_before_resistors = (float) (voltage_after_resistors / 10 * 40);
+        voltage_before_resistors = (float)(voltage_after_resistors / 10 * 40);
     }
 
     return voltage_before_resistors;
@@ -144,17 +144,17 @@ uint8_t calc_average_battery_percentage()
     int cell_value = lowest_cell_value();
     uint8_t battery_percentage = 0;
 
-    esp_adc_cal_characteristics_t *adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    uint32_t voltage_after_resistors = esp_adc_cal_raw_to_voltage((uint32_t) cell_value, adc_chars); // mV
+    esp_adc_cal_characteristics_t* adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    uint32_t voltage_after_resistors = esp_adc_cal_raw_to_voltage((uint32_t)cell_value, adc_chars); // mV
 
     float voltage_before_resistors = get_voltage_before_resistors(voltage_after_resistors);
 
     if (lowest_cell == 1) {
-        battery_percentage = (uint8_t) ((voltage_before_resistors / 4.2) * 100);
+        battery_percentage = (uint8_t)((voltage_before_resistors / 4.2) * 100);
     } else if (lowest_cell == 2) {
-        battery_percentage = (uint8_t) ((voltage_before_resistors / 8.4) * 100);
+        battery_percentage = (uint8_t)((voltage_before_resistors / 8.4) * 100);
     } else {
-        battery_percentage = (uint8_t) ((voltage_before_resistors / 12.6) * 100);
+        battery_percentage = (uint8_t)((voltage_before_resistors / 12.6) * 100);
     }
 
     return battery_percentage;
