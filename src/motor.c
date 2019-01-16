@@ -73,8 +73,8 @@ void motor_task(void* arg)
                 left = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][1] : positionTabel[xValue - 1][(4 - yValue) - 1][0];
             }
 
-            // right *= 0.7;
-            // left *= 0.7;
+            right *= 0.7;
+            left *= 0.7;
 
             if (ahead) {
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor

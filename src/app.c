@@ -70,6 +70,8 @@ void nvs_init()
  */
 void app_main()
 {
+    MCPWMinit();
+
     static const char* APP_MAIN_TAG = "app_main";
 
     esp_log_level_set("camera_task", ESP_LOG_INFO);
