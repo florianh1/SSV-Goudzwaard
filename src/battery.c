@@ -149,8 +149,14 @@ uint8_t calc_average_battery_percentage()
 
     float voltage_before_resistors = get_voltage_before_resistors(voltage_after_resistors);
 
+    if (lowest_cell == 1) {
+        battery_percentage = (uint8_t) ((voltage_before_resistors / 4.2) * 100);
+    } else if (lowest_cell == 2) {
+        battery_percentage = (uint8_t) ((voltage_before_resistors / 8.4) * 100);
+    } else {
+        battery_percentage = (uint8_t) ((voltage_before_resistors / 12.6) * 100);
+    }
 
-
-    return 100;
+    return battery_percentage;
 #endif
 }
