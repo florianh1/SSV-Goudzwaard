@@ -1,10 +1,5 @@
 #include <motor.h>
 
-//settings for the motor speed
-#define MAX_SPEED 100
-#define ACCElERATION_TIMES 3
-#define ACCELERATION (MAX_SPEED / ACCElERATION_TIMES)
-
 extern SemaphoreHandle_t xJoystickSemaphore;
 extern SemaphoreHandle_t yJoystickSemaphore;
 
