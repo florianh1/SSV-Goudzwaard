@@ -73,8 +73,8 @@ void motor_task(void* arg)
                 left = (rightSide) ? positionTabel[xValue - 1][(4 - yValue) - 1][1] : positionTabel[xValue - 1][(4 - yValue) - 1][0];
             }
 
-            right *= 0.7;
-            left *= 0.7;
+            right *= 0.5;
+            left *= 0.5;
 
             if (ahead) {
                 brushed_motor_forward(MCPWM_UNIT_0, MCPWM_TIMER_0, right); // right motor
@@ -113,29 +113,29 @@ void MCPWMinit()
  */
 void brushed_motor_forward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, float duty_cycle)
 {
-    if (mcpwm_num) {
-        if (direction_left != 0) {
-            pwm_left = 0;
-        }
-        for (size_t i = pwm_left; i < duty_cycle; i++) {
-            mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_B);
-            mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_A, i);
-            mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_A, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-        pwm_left = duty_cycle;
-    } else {
-        if (direction_right != 0) {
-            pwm_left = 0;
-        }
-        for (size_t i = pwm_right; i < duty_cycle; i++) {
-            mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_B);
-            mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_A, i);
-            mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_A, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-        pwm_right = duty_cycle;
-    }
+    // if (mcpwm_num) {
+    //     if (direction_left != 0) {
+    //         pwm_left = 0;
+    //     }
+    //     for (size_t i = pwm_left; i < duty_cycle; i++) {
+    //         mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_B);
+    //         mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_A, i);
+    //         mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_A, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
+    //         vTaskDelay(10 / portTICK_PERIOD_MS);
+    //     }
+    //     pwm_left = duty_cycle;
+    // } else {
+    //     if (direction_right != 0) {
+    //         pwm_left = 0;
+    //     }
+    //     for (size_t i = pwm_right; i < duty_cycle; i++) {
+    //         mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_B);
+    //         mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_A, i);
+    //         mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_A, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
+    //         vTaskDelay(10 / portTICK_PERIOD_MS);
+    //     }
+    //     pwm_right = duty_cycle;
+    // }
 
     mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_B);
     mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_A, duty_cycle);
@@ -151,29 +151,29 @@ void brushed_motor_forward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, floa
  */
 void brushed_motor_backward(mcpwm_unit_t mcpwm_num, mcpwm_timer_t timer_num, float duty_cycle)
 {
-    if (mcpwm_num) {
-        if (direction_left != 1) {
-            pwm_left = 1;
-        }
-        for (size_t i = pwm_left; i < duty_cycle; i++) {
-            mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
-            mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_B, i);
-            mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_B, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-        pwm_left = duty_cycle;
-    } else {
-        if (direction_right != 1) {
-            pwm_left = 1;
-        }
-        for (size_t i = pwm_right; i < duty_cycle; i++) {
-            mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
-            mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_B, i);
-            mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_B, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-        pwm_right = duty_cycle;
-    }
+    // if (mcpwm_num) {
+    //     if (direction_left != 1) {
+    //         pwm_left = 1;
+    //     }
+    //     for (size_t i = pwm_left; i < duty_cycle; i++) {
+    //         mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
+    //         mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_B, i);
+    //         mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_B, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
+    //         vTaskDelay(10 / portTICK_PERIOD_MS);
+    //     }
+    //     pwm_left = duty_cycle;
+    // } else {
+    //     if (direction_right != 1) {
+    //         pwm_left = 1;
+    //     }
+    //     for (size_t i = pwm_right; i < duty_cycle; i++) {
+    //         mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
+    //         mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_B, i);
+    //         mcpwm_set_duty_type(mcpwm_num, timer_num, MCPWM_OPR_B, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
+    //         vTaskDelay(10 / portTICK_PERIOD_MS);
+    //     }
+    //     pwm_right = duty_cycle;
+    // }
 
     mcpwm_set_signal_low(mcpwm_num, timer_num, MCPWM_OPR_A);
     mcpwm_set_duty(mcpwm_num, timer_num, MCPWM_OPR_B, duty_cycle);

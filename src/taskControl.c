@@ -28,6 +28,8 @@ void task_control(void* pvParameter)
         if ((!(number_of_devices_connected > 0)) || (battery_percentage < 5)) {
             // stop the tasks
 
+            ESP_LOGE(TASK_TAG, "NHelaas, de taken zijn gestopt. verbindingen: %d, Batterij: %d", number_of_devices_connected, battery_percentage);
+
             if (light_task_handler != NULL) {
                 if (eTaskGetState(light_task_handler) != eSuspended) {
                     ESP_LOGI(TASK_TAG, "Suspending light_task");
