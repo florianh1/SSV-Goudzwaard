@@ -1,13 +1,17 @@
 
 #include <battery.h>
+#include "esp_adc_cal.h"
 
-#define BATTERY_DEMOVALUE
+//#define BATTERY_DEMOVALUE
 
 extern SemaphoreHandle_t batteryPercentageSemaphore;
 
 extern uint8_t battery_percentage;
 
 uint8_t calc_average_battery_percentage();
+
+// Will be either 1, 2 or 3.
+uint8_t lowest_cell;
 
 /**
  * @task thats takes care of the different battery functionalities in the SSV GoudZwaard
@@ -73,6 +77,61 @@ void battery_percentage_transmit_task(void* pvParameter)
 }
 
 /**
+ * The lowest cell value should be used because when a cell value
+ * reaches 0 the battery could die. Therefore the battery percentage
+ * should be calculated using the lowest cell value.
+ *
+ * @return int
+ */
+int lowest_cell_value()
+{
+    int cell_value = 0;
+
+    int cell_1_value = adc1_get_raw(BATTERY_CELL_1);
+    int cell_2_value = adc1_get_raw(BATTERY_CELL_2);
+    int cell_3_value = adc1_get_raw(BATTERY_CELL_3);
+
+    if (cell_1_value > cell_2_value && cell_1_value > cell_3_value) {
+        cell_value = cell_1_value;
+
+        lowest_cell = 1;
+    } else if (cell_2_value > cell_1_value && cell_2_value > cell_3_value) {
+        cell_value = cell_2_value;
+
+        lowest_cell = 2;
+    } else if (cell_3_value > cell_1_value && cell_3_value > cell_2_value) {
+        cell_value = cell_3_value;
+
+        lowest_cell = 3;
+    }
+
+    return cell_value;
+}
+
+/**
+ * The voltage we read from the battery is after the current has gone through resistors.
+ * In this method we convert the voltage from after the resistors to what the voltage
+ * would have been before the resistors.
+ *
+ * @param  voltage_after_resistors
+ * @return float
+ */
+float get_voltage_before_resistors(float voltage_after_resistors)
+{
+    float voltage_before_resistors = 0;
+
+    if (lowest_cell == 1) {
+        voltage_before_resistors = (float) (voltage_after_resistors / 10 * 13.3);
+    } else if (lowest_cell == 2) {
+        voltage_before_resistors = (float) (voltage_after_resistors / 10 * 28);
+    } else {
+        voltage_before_resistors = (float) (voltage_after_resistors / 10 * 40);
+    }
+
+    return voltage_before_resistors;
+}
+
+/**
  * Calculate the average battery percentage based on the 3 cells in the battery.
  *
  * @return uint8_t
@@ -82,23 +141,22 @@ uint8_t calc_average_battery_percentage()
 #ifdef BATTERY_DEMOVALUE
     return 94;
 #else
-    int cell_1_value = adc1_get_raw(BATTERY_CELL_1);
-    int cell_2_value = adc1_get_raw(BATTERY_CELL_2);
-    int cell_3_value = adc1_get_raw(BATTERY_CELL_3);
-    int cell_value = 0;
+    int cell_value = lowest_cell_value();
+    uint8_t battery_percentage = 0;
 
-    // The lowest cell value should be used because when a cell value
-    // reaches 0 the battery could die. Therefore the battery percentage
-    // should be calculated using the lowest cell value.
-    if (cell_1_value > cell_2_value && cell_1_value > cell_3_value) {
-        cell_value = cell_1_value;
-    } else if (cell_2_value > cell_1_value && cell_2_value > cell_3_value) {
-        cell_value = cell_2_value;
-    } else if (cell_3_value > cell_1_value && cell_3_value > cell_2_value) {
-        cell_value = cell_3_value;
+    esp_adc_cal_characteristics_t *adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    uint32_t voltage_after_resistors = esp_adc_cal_raw_to_voltage((uint32_t) cell_value, adc_chars); // mV
+
+    float voltage_before_resistors = get_voltage_before_resistors(voltage_after_resistors);
+
+    if (lowest_cell == 1) {
+        battery_percentage = (uint8_t) ((voltage_before_resistors / 4.2) * 100);
+    } else if (lowest_cell == 2) {
+        battery_percentage = (uint8_t) ((voltage_before_resistors / 8.4) * 100);
+    } else {
+        battery_percentage = (uint8_t) ((voltage_before_resistors / 12.6) * 100);
     }
 
-    // Since we read a 10 bit value from adc, the maximum value will be 1024.
-    return (uint8_t)((cell_value / 1024) * 100);
+    return battery_percentage;
 #endif
 }
